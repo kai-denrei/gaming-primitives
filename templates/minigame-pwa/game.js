@@ -54,6 +54,18 @@ document.addEventListener('visibilitychange', () => {
   paused = document.hidden;
 });
 
+// --- Block default scroll for game keys --------------------------------
+// Arrows + Space scroll the viewport by default; WASD/R are claimed by
+// convention. Build agent: extend this set inside bindInput() if your
+// primitive needs more keys, but don't remove these — every primitive
+// embedded in an iframe will scroll its host page otherwise.
+const PREVENT_KEYS = new Set([
+  'ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
+  'Space','KeyW','KeyA','KeyS','KeyD','KeyR'
+]);
+addEventListener('keydown', (e) => { if (PREVENT_KEYS.has(e.code)) e.preventDefault(); }, { passive: false });
+addEventListener('keyup',   (e) => { if (PREVENT_KEYS.has(e.code)) e.preventDefault(); }, { passive: false });
+
 // --- Boot --------------------------------------------------------------
 function boot() {
   resize();
