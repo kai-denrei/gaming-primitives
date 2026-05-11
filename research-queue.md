@@ -15,7 +15,7 @@ Priority:
 
 These are seeded by hand to verify the pipeline. Run the Research agent against these first, in parallel batches of 5.
 
-- [ ] `lunar-lander-thrust` — apply fuel-limited vector thrust under gravity to null velocity at a target — era:arcade-early — priority:1
+- [x] `lunar-lander-thrust` — apply fuel-limited vector thrust under gravity to null velocity at a target — era:arcade-early — priority:1
 - [x] `asteroids-rotate-thrust` — combine angular and linear thrust with screen-wrap topology — era:arcade-early — priority:1
 - [ ] `pong-paddle-volley` — deflect a ball with a vertical paddle, angle by contact point — era:arcade-early — priority:1
 - [ ] `breakout-paddle-reflect` — deflect a ball at a brick field — era:arcade-early — priority:1
@@ -27,10 +27,10 @@ These are seeded by hand to verify the pipeline. Run the Research agent against 
 - [ ] `donkey-kong-platform-arc` — variable-height ballistic jump with hazard timing — era:arcade-golden-age — priority:1
 - [ ] `mario-platform-arc` — refined variable-jump with horizontal control — era:home-8bit — priority:1
 - [ ] `space-taxi-precision-thrust` — thrust + soft passenger pickup — era:home-8bit — priority:1
-- [ ] `boulder-dash-falling-rocks` — gravity-falling objects as both hazard and puzzle — era:home-8bit — priority:1
+- [x] `boulder-dash-falling-rocks` — gravity-falling objects as both hazard and puzzle — era:home-8bit — priority:1
 - [ ] `lode-runner-dig-fall` — dig holes to trap pursuers — era:home-8bit — priority:1
 - [ ] `tetris-line-clear` — orient falling tetrominoes to clear rows — era:home-8bit — priority:1
-- [ ] `defender-of-the-crown-catapult` — pre-commit angle and power for a ballistic shot — era:home-8bit — priority:1
+- [x] `defender-of-the-crown-catapult` — pre-commit angle and power for a ballistic shot — era:home-8bit — priority:1
 - [ ] `lemmings-assign-roles` — assign behaviors to a stream of autonomous agents — era:home-16bit — priority:1
 - [ ] `populous-terraform` — reshape terrain as a god-level verb — era:home-16bit — priority:1
 - [ ] `dune-2-rts-base` — extract resource, build base, command units — era:home-16bit — priority:1

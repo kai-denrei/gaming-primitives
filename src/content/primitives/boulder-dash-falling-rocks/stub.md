@@ -8,7 +8,7 @@ canonical_platform: Atari 800
 canonical_developer: "First Star / Peter Liepa, Chris Gray"
 era_bucket: home-8bit
 taxonomy_node: RULE/rule-emergence
-status: stub
+status: researched
 orientation: auto
 ---
 
