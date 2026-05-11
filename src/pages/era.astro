@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import EraTimeline from '../components/EraTimeline.astro';
+import { getCollection } from 'astro:content';
+
+const entries = (await getCollection('primitives'))
+  .filter(e => e.id !== '__test__' && !e.id.startsWith('__test__/'));
+---
+<Base title="Era — Gaming Primitives">
+  <h1 class="page-h1">By era</h1>
+  <p class="page-sub">1947 → today. Color by era.</p>
+  <EraTimeline entries={entries} />
+</Base>
+
+<style>
+  .page-h1 { font-family: var(--font-mono); font-size: 2rem; max-width: 70rem; margin: 1rem auto 0; }
+  .page-sub { font-family: var(--font-serif); color: var(--fg-muted); max-width: 70rem; margin: 0.3rem auto 1.5rem; }
+</style>

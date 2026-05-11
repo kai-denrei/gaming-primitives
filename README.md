@@ -81,3 +81,41 @@ After every wave, a human reviews the diff before the next wave runs. **Quality 
 - Not ranking games by quality. Citing canonical originators only.
 - Not writing essays. Tight, dense, primitive-focused prose.
 - Not reproducing copyrighted sprites, sounds, or assets in mini-games. Abstract, original visuals only.
+
+## Running v1
+
+Requirements: Node 24, npm 10.
+
+```
+npm install
+npm run dev -- --port 4321
+open http://localhost:4321/
+```
+
+For full mini-game testing (Astro dev doesn't directory-index `public/g/`), use the production build:
+
+```
+npm run build
+npx http-server dist -p 8080
+open http://localhost:8080/
+```
+
+To scaffold a new mini-game PWA from the template (manual workflow, agent-free):
+
+```
+scripts/new-minigame.sh <primitive-id>
+```
+
+The script copies `templates/minigame-pwa/` into `public/g/<id>/`, substitutes placeholders from `src/content/primitives/<id>/stub.md`, and generates the icon set via `scripts/gen-icons.mjs`.
+
+To run a research / spec / build wave for additional primitives via Claude CLI:
+
+```
+scripts/pm-agent.sh research <id1,id2,...>
+scripts/pm-agent.sh spec    <id1,id2,...>
+scripts/pm-agent.sh build   <id1,id2,...>
+```
+
+Each wave writes a summary to `research-notes/wave-<wave>-<date>.md` and stops for human review. Approve → `git commit`. Reject → `git checkout -- .`.
+
+v1 ships with three fully playable demos: `asteroids-rotate-thrust`, `qix-area-claim`, `baba-is-you-rewrite`. The other 30 primitives render as research-stub cards with `status: stub` badges.

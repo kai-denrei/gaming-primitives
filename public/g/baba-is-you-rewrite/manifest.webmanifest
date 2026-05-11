@@ -1,0 +1,20 @@
+{
+  "name": "Baba Is You Rewrite",
+  "short_name": "Baba Is You ",
+  "description": "Playable demo of the Baba Is You Rewrite primitive.",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "id": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#ff85a1",
+  "theme_color": "#ff85a1",
+  "categories": ["games", "education"],
+  "lang": "en",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

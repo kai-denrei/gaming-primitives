@@ -1,0 +1,20 @@
+{
+  "name": "Qix Area Claim",
+  "short_name": "Qix Area Cla",
+  "description": "Playable demo of the Qix Area Claim primitive.",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "id": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#ffd23f",
+  "theme_color": "#ffd23f",
+  "categories": ["games", "education"],
+  "lang": "en",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

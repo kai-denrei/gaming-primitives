@@ -1,0 +1,26 @@
+{
+  "name": "evolved-escape",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "astro": "^6.3.1",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "sharp": "^0.34.5",
+    "vitest": "^4.1.5"
+  }
+}

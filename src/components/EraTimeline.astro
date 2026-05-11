@@ -1,0 +1,38 @@
+---
+import PrimitiveCard from './PrimitiveCard.astro';
+import { eraMeta, erasByOrder } from '../lib/eras';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { entries: CollectionEntry<'primitives'>[]; }
+const { entries } = Astro.props;
+
+const byEra = new Map<string, CollectionEntry<'primitives'>[]>();
+for (const era of erasByOrder) byEra.set(era, []);
+for (const e of entries) byEra.get(e.data.era_bucket)!.push(e);
+---
+<div class="timeline">
+  {erasByOrder.map(era => (
+    <section class="era" style={`--accent: var(${eraMeta[era].cssVar});`}>
+      <div class="era-head">
+        <span class="dot" />
+        <h2>{eraMeta[era].label}</h2>
+        <span class="range metadata">{eraMeta[era].range}</span>
+      </div>
+      <div class="cards">
+        {byEra.get(era)!.sort((a, b) => a.data.canonical_year - b.data.canonical_year).map(entry => (
+          <PrimitiveCard entry={entry} />
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .timeline { max-width: 70rem; margin-inline: auto; }
+  .era { padding: 1.5rem 0; border-left: 2px solid var(--accent); padding-left: 1rem; margin-left: 1rem; }
+  .era-head { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.6rem; }
+  .era-head h2 { font-family: var(--font-mono); font-size: 1.3rem; margin: 0; }
+  .dot { width: 0.8rem; height: 0.8rem; background: var(--accent); border-radius: 50%; display: inline-block; margin-left: -1.4rem; }
+  .range { color: var(--fg-muted); }
+  .cards { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+</style>

@@ -1,0 +1,39 @@
+---
+---
+<aside id="gp-update" class="gp-update" hidden>
+  <span>New version available.</span>
+  <button id="gp-update-btn">Refresh</button>
+</aside>
+<script is:inline>
+  (() => {
+    if (!('serviceWorker' in navigator)) return;
+    const toast = document.getElementById('gp-update');
+    const btn = document.getElementById('gp-update-btn');
+    let waiting = null;
+    navigator.serviceWorker.getRegistration('/').then(reg => {
+      if (!reg) return;
+      const promote = () => {
+        if (reg.waiting) { waiting = reg.waiting; toast.hidden = false; }
+      };
+      promote();
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) promote();
+        });
+      });
+    });
+    btn?.addEventListener('click', () => {
+      if (!waiting) return;
+      waiting.postMessage({ type: 'SKIP_WAITING' });
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+  })();
+</script>
+<style>
+  .gp-update { position: fixed; top: 1rem; right: 1rem; background: var(--surface); border: 1px solid var(--accent); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem; }
+  .gp-update button { background: var(--accent); color: #0d1117; border: 0; padding: 0.2em 0.7em; border-radius: 3px; cursor: pointer; font-family: inherit; }
+</style>

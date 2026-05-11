@@ -1,0 +1,47 @@
+---
+// Renders nothing server-side; the script captures beforeinstallprompt
+// (Chrome/Edge/Android) and shows an iOS A2HS hint when appropriate.
+---
+<button id="gp-install" class="gp-install" hidden>Install</button>
+<aside id="gp-ios-hint" class="gp-ios-hint" hidden>
+  Install on iOS: tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.
+  <button class="gp-ios-close" aria-label="Dismiss">×</button>
+</aside>
+<script is:inline>
+  (() => {
+    let deferred;
+    const btn = document.getElementById('gp-install');
+    const hint = document.getElementById('gp-ios-hint');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferred = e;
+      if (btn) btn.hidden = false;
+    });
+    if (btn) btn.addEventListener('click', async () => {
+      if (!deferred) return;
+      deferred.prompt();
+      try { await deferred.userChoice; } catch {}
+      deferred = null;
+      btn.hidden = true;
+    });
+    window.addEventListener('appinstalled', () => { if (btn) btn.hidden = true; });
+
+    const ua = navigator.userAgent;
+    const isIOS = /iP(hone|ad|od)/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    const isStandalone = navigator.standalone === true ||
+                         matchMedia('(display-mode: standalone)').matches;
+    if (isIOS && !isStandalone && hint && !localStorage.getItem('gp-ios-hint-dismissed')) {
+      hint.hidden = false;
+      hint.querySelector('.gp-ios-close')?.addEventListener('click', () => {
+        hint.hidden = true;
+        localStorage.setItem('gp-ios-hint-dismissed', '1');
+      });
+    }
+  })();
+</script>
+<style>
+  .gp-install { font-family: var(--font-mono); font-size: 0.85rem; background: var(--accent); color: #0d1117; border: 0; padding: 0.4em 0.9em; border-radius: 4px; cursor: pointer; }
+  .gp-ios-hint { position: fixed; bottom: 1rem; left: 1rem; right: 1rem; max-width: 30rem; margin-inline: auto; background: var(--surface); border: 1px solid var(--border); padding: 0.7rem 1rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; }
+  .gp-ios-close { background: transparent; color: var(--fg-muted); border: 0; font-size: 1.2rem; cursor: pointer; float: right; }
+</style>
