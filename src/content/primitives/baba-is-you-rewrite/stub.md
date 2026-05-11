@@ -8,7 +8,7 @@ canonical_platform: PC
 canonical_developer: "Hempuli / Arvi Teikari"
 era_bucket: indie-modern
 taxonomy_node: RULE/rule-modification
-status: stub
+status: researched
 orientation: auto
 ---
 

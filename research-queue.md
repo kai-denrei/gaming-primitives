@@ -44,7 +44,7 @@ These are seeded by hand to verify the pipeline. Run the Research agent against 
 - [ ] `dark-souls-bonfire-recovery` — die, return to checkpoint, lose dropped progress — era:modern-console-pc — priority:1
 - [ ] `slay-the-spire-deck-run` — build a deck during a one-run roguelike — era:indie-modern — priority:1
 - [ ] `vampire-survivors-evolve` — auto-attack survivor with item evolutions — era:indie-modern — priority:1
-- [ ] `baba-is-you-rewrite` — push word-tiles to rewrite game rules — era:indie-modern — priority:1
+- [x] `baba-is-you-rewrite` — push word-tiles to rewrite game rules — era:indie-modern — priority:1
 - [ ] `patrick-parabox-nested` — push boxes through nested rooms — era:indie-modern — priority:1
 - [ ] `obra-dinn-identity-grid` — assign identity hypotheses against constraint feedback — era:indie-modern — priority:1
 - [ ] `wordle-letter-deduce` — narrow a hidden word from per-letter feedback — era:indie-modern — priority:2
