@@ -8,7 +8,7 @@ canonical_platform: Arcade
 canonical_developer: "Taito / Randy & Sandy Pfeiffer"
 era_bucket: arcade-golden-age
 taxonomy_node: SPATIAL/spatial-claim
-status: researched
+status: speced
 orientation: auto
 ---
 
