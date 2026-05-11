@@ -1,0 +1,42 @@
+---
+import PrimitiveCard from './PrimitiveCard.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { entries: CollectionEntry<'primitives'>[]; }
+const { entries } = Astro.props;
+
+// taxonomy_node is "FAMILY/group" — bucket by family, then by group
+const families = new Map<string, Map<string, CollectionEntry<'primitives'>[]>>();
+for (const e of entries) {
+  const [family, group = 'misc'] = e.data.taxonomy_node.split('/');
+  if (!families.has(family)) families.set(family, new Map());
+  const grp = families.get(family)!;
+  if (!grp.has(group)) grp.set(group, []);
+  grp.get(group)!.push(e);
+}
+const sortedFamilies = Array.from(families.keys()).sort();
+---
+<div class="tree">
+  {sortedFamilies.map(family => (
+    <section class="family">
+      <h2>{family}</h2>
+      {Array.from(families.get(family)!.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([group, items]) => (
+        <div class="group">
+          <h3>{group}</h3>
+          <div class="cards">
+            {items.sort((a, b) => a.data.canonical_year - b.data.canonical_year).map(entry => (
+              <PrimitiveCard entry={entry} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  ))}
+</div>
+
+<style>
+  .tree { max-width: 70rem; margin-inline: auto; }
+  .family h2 { font-family: var(--font-mono); font-size: 1.4rem; margin-top: 2.5rem; color: var(--fg); border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+  .group h3 { font-family: var(--font-mono); font-size: 1rem; color: var(--fg-muted); margin: 1.2rem 0 0.6rem; }
+  .cards { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+</style>
