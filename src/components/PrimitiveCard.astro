@@ -1,0 +1,43 @@
+---
+import EraGlyph from './EraGlyph.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { entry: CollectionEntry<'primitives'>; }
+const { entry } = Astro.props;
+const { id, name, player_verb, canonical_game, canonical_year, era_bucket, status } = entry.data;
+---
+<a class={`card status-${status}`} href={`/p/${id}/`}>
+  <div class="card-head">
+    <EraGlyph era={era_bucket} size={12} />
+    <span class="card-name">{name}</span>
+  </div>
+  <p class="card-verb">{player_verb}</p>
+  <div class="card-meta metadata">
+    <span>{canonical_game} · {canonical_year}</span>
+    <span class={`badge badge-${status}`}>{status}</span>
+  </div>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 150ms ease;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+  .card-name { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 600; }
+  .card-verb { font-family: var(--font-serif); margin: 0 0 0.6rem; color: var(--fg); }
+  .card-meta { display: flex; justify-content: space-between; font-size: 0.78rem; }
+  .badge { padding: 0.1em 0.5em; border-radius: 999px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-stub       { background: #1f2329; color: var(--fg-muted); }
+  .badge-researched { background: #1f2329; color: #c9d1d9; }
+  .badge-speced     { background: #1f2329; color: #ffd23f; }
+  .badge-built      { background: #1f2329; color: #39ff14; }
+</style>
