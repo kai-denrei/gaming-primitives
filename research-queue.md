@@ -21,7 +21,7 @@ These are seeded by hand to verify the pipeline. Run the Research agent against 
 - [ ] `breakout-paddle-reflect` — deflect a ball at a brick field — era:arcade-early — priority:1
 - [ ] `space-invaders-vertical-shot` — fire fixed-vector projectiles at a descending grid — era:arcade-early — priority:1
 - [ ] `pacman-power-pellet` — invert predator/prey for a timed window — era:arcade-golden-age — priority:1
-- [ ] `qix-area-claim` — draw closed polygons to claim shared space — era:arcade-golden-age — priority:1
+- [x] `qix-area-claim` — draw closed polygons to claim shared space — era:arcade-golden-age — priority:1
 - [ ] `defender-radar-rescue` — patrol a wrapping world with a strategic minimap — era:arcade-golden-age — priority:1
 - [ ] `robotron-twin-stick` — separate move and aim vectors — era:arcade-golden-age — priority:1
 - [ ] `donkey-kong-platform-arc` — variable-height ballistic jump with hazard timing — era:arcade-golden-age — priority:1
