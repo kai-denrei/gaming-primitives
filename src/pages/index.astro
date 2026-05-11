@@ -1,17 +1,30 @@
 ---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
 
+const primitives = (await getCollection('primitives'))
+  .filter(e => e.id !== '__test__' && !e.id.startsWith('__test__/'));
+
+const builtCount = primitives.filter(p => p.data.status === 'built').length;
+const totalCount = primitives.length;
 ---
+<Base title="Gaming Primitives">
+  <section class="hero">
+    <h1>Gaming Primitives</h1>
+    <p class="lede">
+      A catalog of the irreducible verbs underneath thousands of games.
+      Every entry is one mechanism, cited, with a tiny playable demo.
+    </p>
+    <p class="metadata">
+      {builtCount} of {totalCount} primitives playable —
+      <a href="/taxonomy/">browse the taxonomy</a> or
+      <a href="/era/">scroll the timeline</a>.
+    </p>
+  </section>
+</Base>
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<style>
+  .hero { max-width: 38rem; margin: 4rem auto 2rem; }
+  .hero h1 { font-family: var(--font-mono); font-size: 2.4rem; margin-bottom: 0.5em; }
+  .lede { font-family: var(--font-serif); font-size: 1.25rem; line-height: 1.5; color: var(--fg); }
+</style>
