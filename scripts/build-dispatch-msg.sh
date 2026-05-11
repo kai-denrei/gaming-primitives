@@ -8,7 +8,7 @@ case "$WAVE" in
   research)
     IDS=${1:?usage: build-dispatch-msg.sh research <id1,id2,...>}
     cat <<EOF
-Read BRIEF.md, schema.md, style-guide.md, references/sources.md (note: sources.md is the file at repo root), and agent-prompts/02-research.md.
+Read BRIEF.md, schema.md, style-guide.md, references/sources.md, and agent-prompts/02-research.md.
 
 Dispatch one parallel sub-agent per id below via the Task tool. Each sub-agent:
 - Reads src/content/primitives/<id>/stub.md
