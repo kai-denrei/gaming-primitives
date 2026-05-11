@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import '../styles/prose.css';
 import InstallButton from '../components/InstallButton.astro';
+import UpdateToast from '../components/UpdateToast.astro';
 
 interface Props {
   title: string;
@@ -48,6 +49,7 @@ const { title, description = 'A catalog of irreducible gameplay primitives.', th
   <footer class="sitefoot">
     <span class="metadata">primitives ≠ genres ≠ games. <a href="/about/">why this exists</a></span>
   </footer>
+  <UpdateToast />
   <style>
     .topbar {
       display: flex;
