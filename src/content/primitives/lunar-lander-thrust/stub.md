@@ -8,7 +8,7 @@ canonical_platform: Arcade
 canonical_developer: "Atari"
 era_bucket: arcade-early
 taxonomy_node: MOMENTUM/momentum-thrust
-status: researched
+status: speced
 orientation: auto
 ---
 
