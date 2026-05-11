@@ -11,7 +11,15 @@ export const eraEnum = z.enum([
   'indie-modern',
 ]);
 
-export type Era = z.infer<typeof eraEnum>;
+export type Era =
+  | 'PoC'
+  | 'arcade-early'
+  | 'arcade-golden-age'
+  | 'home-8bit'
+  | 'home-16bit'
+  | 'early-3d'
+  | 'modern-console-pc'
+  | 'indie-modern';
 
 const primitiveStub = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/, 'kebab-case only'),
