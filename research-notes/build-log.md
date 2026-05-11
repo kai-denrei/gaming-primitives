@@ -1,1 +1,2 @@
 2026-05-11 — asteroids-rotate-thrust — LOC: 360 — tech: canvas-2d — notes: vanilla rAF, semi-implicit Euler with exp(-k·dt) friction, torus-aware collisions, wrap-ghost rendering; touch zones (L-third/R-third/bottom-pad/top-right-FAB).
+2026-05-11 — qix-area-claim — LOC: 399 — tech: canvas-2d — notes: 200x150 Uint8Array grid, marker substepped 1-cell-per-tick, Gendel single 4-flood from Qix on close, degenerate-trail (<3 cells) treated as death, segment-rasterised trail-kill via Bresenham, putImageData blit for grid render, D-pad + DRAW + R touch UI.
