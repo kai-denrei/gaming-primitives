@@ -4,7 +4,7 @@ import GameEmbed from '../../components/GameEmbed.astro';
 import EraGlyph from '../../components/EraGlyph.astro';
 import { eraMeta } from '../../lib/eras';
 import { loadExtras } from '../../lib/content-loader';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const all = await getCollection('primitives');
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 const extras = loadExtras(entry.data.id);
 const heroColor = `var(${eraMeta[entry.data.era_bucket].cssVar})`;
 ---

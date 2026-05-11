@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 export const eraEnum = z.enum([
   'PoC',
@@ -22,11 +23,11 @@ export type Era =
   | 'indie-modern';
 
 const primitiveStub = z.object({
-  id: z.string().regex(/^[a-z0-9-]+$/, 'kebab-case only'),
+  id: z.string().regex(/^[a-z0-9_-]+$/, 'kebab-case or test ID'),
   name: z.string(),
   player_verb: z.string(),
   canonical_game: z.string(),
-  canonical_year: z.number().int().min(1958).max(2100),
+  canonical_year: z.number().int().min(1947).max(2100),
   canonical_platform: z.string(),
   canonical_developer: z.string(),
   era_bucket: eraEnum,
@@ -37,7 +38,7 @@ const primitiveStub = z.object({
 
 export const collections = {
   primitives: defineCollection({
-    type: 'content',
+    loader: glob({ pattern: '**/index.md', base: './src/content/primitives' }),
     schema: primitiveStub,
   }),
 };
