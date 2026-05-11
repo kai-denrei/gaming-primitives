@@ -1,0 +1,1 @@
+2026-05-11 — asteroids-rotate-thrust — LOC: 360 — tech: canvas-2d — notes: vanilla rAF, semi-implicit Euler with exp(-k·dt) friction, torus-aware collisions, wrap-ghost rendering; touch zones (L-third/R-third/bottom-pad/top-right-FAB).

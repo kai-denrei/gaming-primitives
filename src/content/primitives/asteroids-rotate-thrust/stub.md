@@ -8,7 +8,7 @@ canonical_platform: Arcade
 canonical_developer: "Atari / Lyle Rains, Ed Logg"
 era_bucket: arcade-early
 taxonomy_node: MOMENTUM/momentum-thrust
-status: speced
+status: built
 orientation: auto
 ---
 
