@@ -16,7 +16,7 @@ Priority:
 These are seeded by hand to verify the pipeline. Run the Research agent against these first, in parallel batches of 5.
 
 - [ ] `lunar-lander-thrust` — apply fuel-limited vector thrust under gravity to null velocity at a target — era:arcade-early — priority:1
-- [ ] `asteroids-rotate-thrust` — combine angular and linear thrust with screen-wrap topology — era:arcade-early — priority:1
+- [x] `asteroids-rotate-thrust` — combine angular and linear thrust with screen-wrap topology — era:arcade-early — priority:1
 - [ ] `pong-paddle-volley` — deflect a ball with a vertical paddle, angle by contact point — era:arcade-early — priority:1
 - [ ] `breakout-paddle-reflect` — deflect a ball at a brick field — era:arcade-early — priority:1
 - [ ] `space-invaders-vertical-shot` — fire fixed-vector projectiles at a descending grid — era:arcade-early — priority:1
