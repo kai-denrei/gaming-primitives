@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import GameEmbed from '../../components/GameEmbed.astro';
+import EraGlyph from '../../components/EraGlyph.astro';
+import { eraMeta } from '../../lib/eras';
+import { loadExtras } from '../../lib/content-loader';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const all = await getCollection('primitives');
+  return all
+    .filter(e => e.id !== '__test__' && !e.id.startsWith('__test__/'))
+    .map(entry => ({ params: { id: entry.data.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+const extras = loadExtras(entry.data.id);
+const heroColor = `var(${eraMeta[entry.data.era_bucket].cssVar})`;
+---
+<Base title={`${entry.data.name} — Gaming Primitives`} themeColor="#0d1117">
+  <article class="primitive">
+    <header class="hero" style={`--hero: ${heroColor};`}>
+      <div class="hero-meta">
+        <EraGlyph era={entry.data.era_bucket} size={20} />
+        <span class="metadata">{eraMeta[entry.data.era_bucket].label} · {entry.data.canonical_year}</span>
+      </div>
+      <h1>{entry.data.name}</h1>
+      <p class="verb">The player <strong>{entry.data.player_verb}</strong>.</p>
+      <p class="metadata">
+        <strong>{entry.data.canonical_game}</strong> ({entry.data.canonical_year}, {entry.data.canonical_platform}) — {entry.data.canonical_developer}
+      </p>
+    </header>
+
+    {entry.data.status === 'built' && (
+      <section class="play">
+        <h2>Play</h2>
+        <GameEmbed id={entry.data.id} name={entry.data.name} orientation={entry.data.orientation} />
+      </section>
+    )}
+
+    <section class="prose stub">
+      <h2>Stub</h2>
+      <Content />
+    </section>
+
+    {extras.research && (
+      <section class="prose research">
+        <h2>Research</h2>
+        <pre>{extras.research.rawContent}</pre>
+        <p class="metadata"><em>Rendered as raw markdown for v1. Markdown→HTML upgrade is post-v1.</em></p>
+      </section>
+    )}
+
+    {extras.spec && (
+      <section class="prose spec">
+        <h2>Spec</h2>
+        <pre>{extras.spec.rawContent}</pre>
+      </section>
+    )}
+  </article>
+</Base>
+
+<style>
+  .primitive { max-width: 70rem; margin-inline: auto; }
+  .hero { border-left: 4px solid var(--hero); padding: 1.25rem 1.5rem; background: var(--surface); border-radius: 6px; margin-bottom: 2rem; }
+  .hero h1 { font-family: var(--font-mono); font-size: 2rem; margin: 0.4em 0 0.2em; }
+  .hero-meta { display: flex; align-items: center; gap: 0.5rem; }
+  .verb { font-family: var(--font-serif); font-size: 1.15rem; margin: 0.5em 0 0.7em; }
+  .play h2, .prose h2 { font-family: var(--font-mono); }
+  .play { margin: 2.5rem auto; max-width: 70rem; }
+  .prose pre { white-space: pre-wrap; }
+</style>
