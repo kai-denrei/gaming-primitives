@@ -1,7 +1,7 @@
 ---
 interface Props { id: string; name: string; orientation?: 'auto' | 'portrait' | 'landscape'; }
 const { id, name, orientation = 'auto' } = Astro.props;
-const src = `/g/${id}/`;
+const src = `${import.meta.env.BASE_URL}g/${id}/`;
 ---
 <div class={`game-embed orient-${orientation}`}>
   <iframe

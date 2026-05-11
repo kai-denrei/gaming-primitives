@@ -7,6 +7,7 @@ const primitives = (await getCollection('primitives'))
 
 const builtCount = primitives.filter(p => p.data.status === 'built').length;
 const totalCount = primitives.length;
+const base = import.meta.env.BASE_URL;
 ---
 <Base title="Gaming Primitives">
   <section class="hero">
@@ -17,8 +18,8 @@ const totalCount = primitives.length;
     </p>
     <p class="metadata">
       {builtCount} of {totalCount} primitives playable —
-      <a href="/taxonomy/">browse the taxonomy</a> or
-      <a href="/era/">scroll the timeline</a>.
+      <a href={`${base}taxonomy/`}>browse the taxonomy</a> or
+      <a href={`${base}era/`}>scroll the timeline</a>.
     </p>
   </section>
 </Base>

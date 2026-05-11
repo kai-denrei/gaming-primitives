@@ -4,18 +4,22 @@ const CACHE_VERSION = 'v0.1.0';
 const PRECACHE = `gp-hub-precache-${CACHE_VERSION}`;
 const RUNTIME  = `gp-hub-runtime-${CACHE_VERSION}`;
 
+// Derive the SW's served path so PRECACHE_URLS and fetch-handler checks
+// work at any base path (root in dev, /gaming-primitives/ in CI deploy).
+const SCOPE_PATH = self.location.pathname.replace(/sw\.js$/, '');
+
 const PRECACHE_URLS = [
-  '/',
-  '/taxonomy/',
-  '/era/',
-  '/about/',
-  '/offline.html',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon-180.png',
-  '/icons/favicon-32.png',
+  SCOPE_PATH,
+  SCOPE_PATH + 'taxonomy/',
+  SCOPE_PATH + 'era/',
+  SCOPE_PATH + 'about/',
+  SCOPE_PATH + 'offline.html',
+  SCOPE_PATH + 'manifest.webmanifest',
+  SCOPE_PATH + 'icons/icon-192.png',
+  SCOPE_PATH + 'icons/icon-512.png',
+  SCOPE_PATH + 'icons/icon-maskable-512.png',
+  SCOPE_PATH + 'icons/apple-touch-icon-180.png',
+  SCOPE_PATH + 'icons/favicon-32.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -50,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Mini-game scope is NOT ours — let those SWs handle it.
-  if (url.pathname.startsWith('/g/')) return;
+  if (url.pathname.startsWith(SCOPE_PATH + 'g/')) return;
 
   if (req.mode === 'navigate') {
     event.respondWith(navigationHandler(event));
@@ -82,9 +86,9 @@ async function navigationHandler(event) {
     }
     throw new Error('nav not ok');
   } catch (_) {
-    const cached = await cache.match(event.request) || await cache.match('/');
+    const cached = await cache.match(event.request) || await cache.match(SCOPE_PATH);
     if (cached) return cached;
-    return cache.match('/offline.html');
+    return cache.match(SCOPE_PATH + 'offline.html');
   }
 }
 

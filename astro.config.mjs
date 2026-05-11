@@ -1,7 +1,10 @@
 import { defineConfig } from 'astro/config';
 
+const isCI = process.env.GITHUB_ACTIONS === 'true';
+
 export default defineConfig({
-  site: 'http://localhost:4321',
+  site: isCI ? 'https://kai-denrei.github.io' : 'http://localhost:4321',
+  base: isCI ? '/gaming-primitives' : '/',
   output: 'static',
   trailingSlash: 'always',
   build: {
