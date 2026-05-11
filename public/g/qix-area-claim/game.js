@@ -26,7 +26,6 @@ const state = {
   input: { up:false, down:false, left:false, right:false, draw:false, restart:false },
   claimed: 0,
   status: 'play',
-  touches: new Map(),
 };
 
 function idx(x, y) { return y * W + x; }
@@ -267,22 +266,6 @@ function render() {
     const msg = state.status === 'win' ? 'CLAIMED — press R' : 'DEAD — press R';
     ctx.fillText(msg, (cw - ctx.measureText(msg).width) / 2, ch/2 + 6);
   }
-  if (matchMedia('(pointer: coarse)').matches) drawTouchUI(cw, ch);
-}
-
-function drawTouchUI(cw, ch) {
-  ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1;
-  ctx.fillStyle = 'rgba(255,210,63,0.18)';
-  const px = 12, py = ch - 12 - 132, sz = 44;
-  ctx.strokeRect(px + sz,    py,        sz, sz);  // up
-  ctx.strokeRect(px,         py + sz,   sz, sz);  // left
-  ctx.strokeRect(px + sz*2,  py + sz,   sz, sz);  // right
-  ctx.strokeRect(px + sz,    py + sz*2, sz, sz);  // down
-  const dx = cw - 12 - 56, dy = ch - 12 - 56;
-  ctx.beginPath(); ctx.arc(dx + 28, dy + 28, 28, 0, Math.PI*2); ctx.stroke();
-  ctx.fillStyle = '#e8e8f0'; ctx.font = '11px ui-monospace, monospace';
-  ctx.fillText('DRAW', dx + 12, dy + 32);
-  ctx.strokeRect(cw - 56, 28, 44, 30); ctx.fillText('R', cw - 38, 49);
 }
 
 // --- Input -------------------------------------------------------------
@@ -305,53 +288,36 @@ function bindInput() {
     else if (e.code === 'Space')                           inp.draw  = false;
   });
 
-  const stage = document.getElementById('stage');
-  function zoneAt(t) {
-    const r = stage.getBoundingClientRect();
-    const x = t.clientX - r.left, y = t.clientY - r.top;
-    const cw = r.width, ch = r.height, sz = 44;
-    const px = 12, py = ch - 12 - 132;
-    if (x >= px + sz   && x < px + sz*2 && y >= py        && y < py + sz)    return 'up';
-    if (x >= px        && x < px + sz   && y >= py + sz   && y < py + sz*2)  return 'left';
-    if (x >= px + sz*2 && x < px + sz*3 && y >= py + sz   && y < py + sz*2)  return 'right';
-    if (x >= px + sz   && x < px + sz*2 && y >= py + sz*2 && y < py + sz*3)  return 'down';
-    const dx = cw - 12 - 56, dy = ch - 12 - 56;
-    if ((x - (dx+28))**2 + (y - (dy+28))**2 < 28*28) return 'draw';
-    if (x >= cw - 56 && x < cw - 12 && y >= 28 && y < 58) return 'restart';
-    return null;
+  // Explicit DOM control bar — buttons map directly to input flags. The DRAW
+  // action button doubles as restart on dead/win so the player can recover
+  // without keyboard. pointerleave releases the flag so a finger sliding off
+  // doesn't latch a stuck direction.
+  const ACT = { up: 'up', down: 'down', left: 'left', right: 'right', draw: 'draw' };
+  for (const btn of document.querySelectorAll('.touch-bar .tb-btn')) {
+    const act = btn.dataset.act;
+    const press = (e) => {
+      e.preventDefault();
+      btn.setPointerCapture?.(e.pointerId);
+      btn.classList.add('held');
+      if (ACT[act]) inp[ACT[act]] = true;
+      if (act === 'draw' && state.status !== 'play') inp.restart = true;
+    };
+    const release = (e) => {
+      e?.preventDefault?.();
+      btn.classList.remove('held');
+      if (ACT[act]) inp[ACT[act]] = false;
+    };
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('pointerleave', release);
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
   }
-  function refresh() {
-    inp.up = inp.down = inp.left = inp.right = inp.draw = false;
-    for (const z of state.touches.values()) if (z !== 'restart') inp[z] = true;
-  }
-  stage.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    for (const t of e.changedTouches) {
-      const z = zoneAt(t);
-      if (z === 'restart') { inp.restart = true; continue; }
-      if (z) state.touches.set(t.identifier, z);
-    }
-    refresh();
-  }, { passive: false });
-  stage.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    for (const t of e.changedTouches) if (state.touches.has(t.identifier)) {
-      const z = zoneAt(t);
-      if (z && z !== 'restart') state.touches.set(t.identifier, z);
-    }
-    refresh();
-  }, { passive: false });
-  const endTouch = (e) => {
-    for (const t of e.changedTouches) state.touches.delete(t.identifier);
-    refresh();
-  };
-  stage.addEventListener('touchend', endTouch);
-  stage.addEventListener('touchcancel', endTouch);
 
   // Stuck Space across a tab swap would auto-draw on focus return.
   addEventListener('blur', () => {
     inp.up = inp.down = inp.left = inp.right = inp.draw = false;
-    state.touches.clear();
+    for (const b of document.querySelectorAll('.touch-bar .tb-btn.held')) b.classList.remove('held');
   });
 }
 
@@ -369,7 +335,7 @@ document.addEventListener('visibilitychange', () => {
   if (paused) {
     const inp = state.input;
     inp.up = inp.down = inp.left = inp.right = inp.draw = false;
-    state.touches.clear();
+    for (const b of document.querySelectorAll('.touch-bar .tb-btn.held')) b.classList.remove('held');
   }
 });
 

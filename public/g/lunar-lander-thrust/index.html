@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#ff5e3a">
+  <meta name="description" content="Lunar Lander Thrust — playable demo of the Lunar Lander Thrust primitive.">
+
+  <title>Lunar Lander Thrust</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png" sizes="180x180">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lunar Lander Thrust">
+
+  <link rel="preload" as="style" href="style.css?v=0.1.0">
+  <link rel="stylesheet" href="style.css?v=0.1.0">
+</head>
+<body>
+  <header class="toolbar" role="banner">
+    <a href="../../" class="tbtn back" aria-label="Back to catalog">←</a>
+    <span class="brand">Lunar Lander Thrust <span class="ver">v0.1.0</span></span>
+    <span class="spacer"></span>
+    <button id="btn-install" class="tbtn" hidden>Install</button>
+    <button id="btn-fullscreen" class="tbtn" aria-label="Fullscreen">⛶</button>
+  </header>
+
+  <p id="ios-hint" class="ios-hint" hidden>
+    Install: tap Share, then <strong>Add to Home Screen</strong>.
+    <button id="ios-hint-close" aria-label="Dismiss">×</button>
+  </p>
+
+  <main id="stage" class="stage">
+    <canvas id="canvas" aria-label="Lunar Lander Thrust playfield"></canvas>
+    <div id="hud" class="hud"></div>
+  </main>
+
+  <script type="module" src="game.js?v=0.1.0"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { scope: './' }).catch(()=>{});
+      });
+    }
+  </script>
+</body>
+</html>

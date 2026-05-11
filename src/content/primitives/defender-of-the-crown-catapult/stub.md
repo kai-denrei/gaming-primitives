@@ -8,7 +8,7 @@ canonical_platform: Amiga
 canonical_developer: "Cinemaware / Kellyn Beck"
 era_bucket: home-8bit
 taxonomy_node: PROJECTILE/projectile-arc
-status: stub
+status: built
 orientation: auto
 ---
 
