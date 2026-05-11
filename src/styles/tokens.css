@@ -1,0 +1,51 @@
+:root {
+  /* Hub theme — neutral dark backdrop (KikaCentroid carryover) */
+  --bg: #0d1117;
+  --surface: #161b22;
+  --fg: #e6edf3;
+  --fg-muted: #9aa4b2;
+  --border: #30363d;
+  --accent: #58a6ff;
+
+  /* Per-era accent colors — each primitive page tints its hero band */
+  --era-poc: #39ff14;
+  --era-arcade-early: #ff5e3a;
+  --era-arcade-golden: #ffd23f;
+  --era-arcade-golden-secondary: #e63946;
+  --era-home-8bit: #5b76ff;
+  --era-home-16bit: #c83be0;
+  --era-early-3d: #ff9f1c;
+  --era-modern: #7a8a99;
+  --era-indie: #ff85a1;
+
+  /* Type */
+  --font-serif: Charter, Georgia, "Iowan Old Style", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+
+  --measure-prose: 68ch;
+  --line-height-prose: 1.55;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
