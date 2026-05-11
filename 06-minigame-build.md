@@ -132,3 +132,34 @@ If any gate fails, fix before declaring done.
 - **Pretty over legible.** This is educational. Beautiful is great, but unreadable code is a failure.
 - **No comments where the primitive lives.** Without comments at `tick()`, the source is useless as a teaching artifact.
 - **CDN-loaded dependencies.** Anything fetched at runtime is a failure for the seed deliverable.
+
+## v1 PWA delivery additions (overrides where conflicting)
+
+The mini-game lives at `public/g/{id}/` and is scaffolded by `scripts/new-minigame.sh {id}` from `templates/minigame-pwa/`. The template already provides:
+
+- `index.html` (viewport, iOS PWA tags, fullscreen button, SW registration)
+- `style.css` (era-color theming, fullscreen stage, reduced-motion respect)
+- `manifest.webmanifest` (display: fullscreen, orientation from spec.md)
+- `sw.js` (hand-rolled, NetworkFirst nav, SWR JS/CSS, CacheFirst images, offline.html fallback)
+- `offline.html`, `icons/` (generated)
+
+**You only write `game.js` and fill `README.md`.** Do NOT modify the other files. If you need to change them, the template itself is wrong — flag the issue in your wave summary so the human can update the template once for all games.
+
+### Additional quality gates
+
+The 8 base gates in this prompt still apply. Add these 4 for v1:
+
+- [ ] Lighthouse Installability check passes in Chrome (human verifies)
+- [ ] Game loads and plays after toggling network offline in DevTools (human verifies)
+- [ ] Fullscreen toggle works on real iOS Safari + portrait/landscape per spec.md (human verifies on device)
+- [ ] `prefers-reduced-motion: reduce` disables non-essential animation in `game.js`
+
+### Game.js shape (with template-supplied scaffolding)
+
+The template's `game.js` already includes:
+- canvas setup with DPR-aware resize
+- fullscreen button binding
+- pause-on-blur via visibilitychange
+- requestAnimationFrame loop with dt clamping
+
+Your job: fill `state`, `tick(dt)`, `render()`, `bindInput()`. Keep the structure. Read the file before overwriting — do not delete the boot/resize/pause-on-blur plumbing.
