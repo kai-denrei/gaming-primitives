@@ -1,6 +1,7 @@
 ---
 import '../styles/tokens.css';
 import '../styles/prose.css';
+import InstallButton from '../components/InstallButton.astro';
 
 interface Props {
   title: string;
@@ -40,6 +41,7 @@ const { title, description = 'A catalog of irreducible gameplay primitives.', th
       <a href="/taxonomy/">taxonomy</a>
       <a href="/era/">era</a>
       <a href="/about/">about</a>
+      <InstallButton />
     </nav>
   </header>
   <main><slot /></main>
