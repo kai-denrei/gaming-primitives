@@ -263,19 +263,29 @@ function drawTouchHints() {
 // --- Input -------------------------------------------------------------
 function bindInput() {
   const inp = state.input;
+  // Keys the game claims — preventDefault on each to stop the page scrolling
+  // (ArrowUp/Down/Space scroll the viewport by default) and to keep WASD
+  // out of any future text-field focus race.
+  const GAME_KEYS = new Set([
+    'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space',
+    'KeyA','KeyD','KeyW','KeyS','KeyR'
+  ]);
   addEventListener('keydown', (e) => {
+    if (GAME_KEYS.has(e.code)) e.preventDefault();
     if (e.repeat) return;
-    if      (e.code === 'ArrowLeft')  inp.L = true;
-    else if (e.code === 'ArrowRight') inp.R = true;
-    else if (e.code === 'ArrowUp')    inp.T = true;
-    else if (e.code === 'Space')      { inp.fired = true; e.preventDefault(); }
-    else if (e.code === 'KeyR')       inp.restart = true;
-  });
+    // WASD mirrors arrows; ArrowDown/KeyS are inert in play but still claimed.
+    if      (e.code === 'ArrowLeft'  || e.code === 'KeyA') inp.L = true;
+    else if (e.code === 'ArrowRight' || e.code === 'KeyD') inp.R = true;
+    else if (e.code === 'ArrowUp'    || e.code === 'KeyW') inp.T = true;
+    else if (e.code === 'Space')                            inp.fired = true;
+    else if (e.code === 'KeyR')                             inp.restart = true;
+  }, { passive: false });
   addEventListener('keyup', (e) => {
-    if      (e.code === 'ArrowLeft')  inp.L = false;
-    else if (e.code === 'ArrowRight') inp.R = false;
-    else if (e.code === 'ArrowUp')    inp.T = false;
-  });
+    if (GAME_KEYS.has(e.code)) e.preventDefault();
+    if      (e.code === 'ArrowLeft'  || e.code === 'KeyA') inp.L = false;
+    else if (e.code === 'ArrowRight' || e.code === 'KeyD') inp.R = false;
+    else if (e.code === 'ArrowUp'    || e.code === 'KeyW') inp.T = false;
+  }, { passive: false });
   // Reset held flags on blur so a stuck key doesn't auto-thrust on resume.
   addEventListener('blur', () => { inp.L = inp.R = inp.T = false; });
 
