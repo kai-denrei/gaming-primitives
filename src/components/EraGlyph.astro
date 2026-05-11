@@ -1,0 +1,42 @@
+---
+import { eraMeta } from '../lib/eras';
+import type { Era } from '../content.config';
+
+interface Props { era: Era; size?: number; }
+const { era, size = 16 } = Astro.props;
+const meta = eraMeta[era];
+const color = `var(${meta.cssVar})`;
+---
+<span class="era-glyph" style={`--glyph-color: ${color}; width: ${size}px; height: ${size}px;`} title={meta.label} aria-label={meta.label}>
+  {era === 'PoC' && <i class="g g-poc" />}
+  {era === 'arcade-early' && <i class="g g-arcade-early" />}
+  {era === 'arcade-golden-age' && <i class="g g-arcade-golden" />}
+  {era === 'home-8bit' && <i class="g g-home-8bit" />}
+  {era === 'home-16bit' && <i class="g g-home-16bit" />}
+  {era === 'early-3d' && <i class="g g-early-3d" />}
+  {era === 'modern-console-pc' && <i class="g g-modern" />}
+  {era === 'indie-modern' && <i class="g g-indie" />}
+</span>
+
+<style>
+  .era-glyph {
+    display: inline-block;
+    image-rendering: pixelated;
+    background-color: var(--glyph-color);
+    /* SVG mask for the pixel-glyph shape per era. Falls back to a solid square
+       if the SVG fails to load, which is intentional — the color is the signal. */
+    mask: var(--mask, none) center / contain no-repeat;
+    -webkit-mask: var(--mask, none) center / contain no-repeat;
+    vertical-align: middle;
+  }
+  /* Inline-encoded 8x8 pixel motifs per era. Kept compact in CSS to avoid
+     extra HTTP requests for 33-card listings. */
+  .g-poc                { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='0' y='3' width='8' height='2' fill='black'/><rect x='3' y='0' width='2' height='8' fill='black'/></svg>"); }
+  .g-arcade-early       { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='3' y='0' width='2' height='2' fill='black'/><rect x='1' y='2' width='6' height='4' fill='black'/><rect x='3' y='6' width='2' height='2' fill='black'/></svg>"); }
+  .g-arcade-golden      { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='0' y='0' width='8' height='2' fill='black'/><rect x='0' y='3' width='8' height='2' fill='black'/><rect x='0' y='6' width='8' height='2' fill='black'/></svg>"); }
+  .g-home-8bit          { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='0' y='0' width='3' height='3' fill='black'/><rect x='5' y='0' width='3' height='3' fill='black'/><rect x='0' y='5' width='3' height='3' fill='black'/><rect x='5' y='5' width='3' height='3' fill='black'/></svg>"); }
+  .g-home-16bit         { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='2' y='0' width='4' height='8' fill='black'/><rect x='0' y='2' width='8' height='4' fill='black'/></svg>"); }
+  .g-early-3d           { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><polygon points='4,0 8,4 4,8 0,4' fill='black'/></svg>"); }
+  .g-modern             { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect x='1' y='1' width='6' height='6' fill='black'/></svg>"); }
+  .g-indie              { --mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><polygon points='4,0 5,3 8,3 6,5 7,8 4,6 1,8 2,5 0,3 3,3' fill='black'/></svg>"); }
+</style>
