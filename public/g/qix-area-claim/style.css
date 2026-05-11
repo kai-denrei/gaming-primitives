@@ -6,11 +6,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; color: var(--fg); font-family: ui-monospace, "SF Mono", Menlo, monospace; -webkit-text-size-adjust: 100%; }
 
-.toolbar { display: flex; align-items: center; padding: 0.4rem 0.6rem; background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
+.toolbar { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.6rem; padding-top: calc(0.4rem + env(safe-area-inset-top, 0px)); padding-left: max(0.6rem, env(safe-area-inset-left, 0px)); padding-right: max(0.6rem, env(safe-area-inset-right, 0px)); background: rgba(0,0,0,0.55); position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
 .brand { font-weight: 700; font-size: 0.9rem; }
 .ver { font-weight: 400; color: rgba(255,255,255,0.6); margin-left: 0.4rem; font-size: 0.8em; }
 .spacer { flex: 1; }
-.tbtn { background: rgba(255,255,255,0.1); color: var(--fg); border: 1px solid rgba(255,255,255,0.2); padding: 0.25em 0.6em; border-radius: 3px; font-family: inherit; font-size: 0.85rem; cursor: pointer; margin-left: 0.4rem; }
+.tbtn { background: rgba(255,255,255,0.1); color: var(--fg); border: 1px solid rgba(255,255,255,0.2); padding: 0.25em 0.6em; border-radius: 3px; font-family: inherit; font-size: 0.85rem; cursor: pointer; text-decoration: none; line-height: 1; display: inline-flex; align-items: center; }
+.tbtn.back { font-size: 1.05rem; padding: 0.2em 0.55em; }
 
 .stage { position: fixed; inset: 0; padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0); background: var(--bg); }
 #canvas { width: 100%; height: 100%; display: block; touch-action: none; }
@@ -18,6 +19,44 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
 
 .ios-hint { position: fixed; top: 3rem; left: 0.8rem; right: 0.8rem; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-size: 0.85rem; z-index: 11; }
 .ios-hint button { background: transparent; color: var(--fg); border: 0; font-size: 1.1rem; cursor: pointer; float: right; }
+
+.touch-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: none;
+  background: rgba(0,0,0,0.65);
+  padding: 0.5rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+  z-index: 12;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: stretch;
+  user-select: none; -webkit-user-select: none;
+  touch-action: none;
+}
+.touch-bar .cluster { display: flex; gap: 0.5rem; }
+.touch-bar .tb-btn {
+  appearance: none; -webkit-appearance: none;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.30);
+  color: var(--fg);
+  font-family: inherit; font-weight: 700; font-size: 0.95rem;
+  border-radius: 10px;
+  min-width: 52px; height: 56px;
+  padding: 0 12px;
+  touch-action: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.touch-bar .tb-btn.held,
+.touch-bar .tb-btn:active { background: rgba(255,255,255,0.34); border-color: rgba(255,255,255,0.55); }
+.touch-bar .cluster.dpad .tb-btn { min-width: 48px; padding: 0 10px; }
+
+@media (pointer: coarse), (hover: none) {
+  .touch-bar { display: flex; }
+  .stage { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); padding-bottom: 0; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

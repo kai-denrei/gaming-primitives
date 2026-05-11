@@ -57,6 +57,9 @@ const base = import.meta.env.BASE_URL;
       justify-content: space-between;
       align-items: center;
       padding: 1rem 1.5rem;
+      padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+      padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
       border-bottom: 1px solid var(--border);
     }
     .brand { font-family: var(--font-mono); font-weight: 600; color: var(--fg); text-decoration: none; }

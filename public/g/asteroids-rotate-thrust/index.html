@@ -17,12 +17,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Asteroids Rotate-Thrust">
 
-  <link rel="preload" as="style" href="style.css?v=0.1.0">
-  <link rel="stylesheet" href="style.css?v=0.1.0">
+  <link rel="preload" as="style" href="style.css?v=0.1.1">
+  <link rel="stylesheet" href="style.css?v=0.1.1">
 </head>
 <body>
   <header class="toolbar" role="banner">
-    <span class="brand">Asteroids Rotate-Thrust <span class="ver">v0.1.0</span></span>
+    <a href="../../" class="tbtn back" aria-label="Back to catalog">←</a>
+    <span class="brand">Asteroids Rotate-Thrust <span class="ver">v0.1.1</span></span>
     <span class="spacer"></span>
     <button id="btn-install" class="tbtn" hidden>Install</button>
     <button id="btn-fullscreen" class="tbtn" aria-label="Fullscreen">⛶</button>
@@ -38,7 +39,18 @@
     <div id="hud" class="hud"></div>
   </main>
 
-  <script type="module" src="game.js?v=0.1.0"></script>
+  <nav class="touch-bar" aria-label="Game controls">
+    <div class="cluster">
+      <button class="tb-btn" data-act="left" aria-label="Turn left" type="button">◀</button>
+      <button class="tb-btn" data-act="right" aria-label="Turn right" type="button">▶</button>
+    </div>
+    <div class="cluster">
+      <button class="tb-btn" data-act="thrust" aria-label="Thrust" type="button">▲ THRUST</button>
+      <button class="tb-btn tap" data-act="fire" aria-label="Fire" type="button">● FIRE</button>
+    </div>
+  </nav>
+
+  <script type="module" src="game.js?v=0.1.1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

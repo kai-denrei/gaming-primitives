@@ -25,8 +25,7 @@ const REDUCED  = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const state = {
   ship: null, bullets: [], asteroids: [], flashes: [],
   wave: 0, cleared: 0,
-  input: { L:false, R:false, T:false, fired:false, restart:false,
-           touches:new Map(), zonesOn:false }
+  input: { L:false, R:false, T:false, fired:false, restart:false }
 };
 
 function reset() {
@@ -212,7 +211,6 @@ function render() {
     const msg = 'press R or two-finger tap to restart';
     ctx.fillText(msg, (W - ctx.measureText(msg).width)/2, H/2);
   }
-  if (state.input.zonesOn) drawTouchHints();
   ctx.restore();
 }
 
@@ -252,13 +250,6 @@ function drawRock(a) {
   ctx.closePath(); ctx.stroke();
 }
 function drawBullet() { ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI*2); ctx.stroke(); }
-function drawTouchHints() {
-  ctx.strokeStyle = '#222';
-  ctx.strokeRect(0, 0, W/3, H);
-  ctx.strokeRect(W*2/3, 0, W/3, H);
-  ctx.strokeRect(W/3, H*0.65, W/3, H*0.35);
-  ctx.strokeStyle = '#fff';
-}
 
 // --- Input -------------------------------------------------------------
 function bindInput() {
@@ -289,54 +280,34 @@ function bindInput() {
   // Reset held flags on blur so a stuck key doesn't auto-thrust on resume.
   addEventListener('blur', () => { inp.L = inp.R = inp.T = false; });
 
-  // Touch zones: left third = rotate L, right third = rotate R, bottom-center
-  // pad = thrust, top-right FAB area = fire (tap-edge). Two-finger tap while
-  // dead = restart. Zones render only while a touch is active.
-  const stage = document.getElementById('stage');
-  function zoneOf(t) {
-    const r = stage.getBoundingClientRect();
-    const x = (t.clientX - r.left) / r.width, y = (t.clientY - r.top) / r.height;
-    if (x > 0.78 && y < 0.18) return 'fire';
-    if (y > 0.65 && x > 0.33 && x < 0.67) return 'thrust';
-    if (x < 0.33) return 'left';
-    if (x > 0.67) return 'right';
-    return null;
+  // Explicit DOM control bar — buttons map directly to input flags. Hold-buttons
+  // (◀ ▶ ▲ THRUST) toggle their flag on pointerdown/up; tap-buttons (● FIRE)
+  // edge-trigger inp.fired (and inp.restart, so the same button revives a dead
+  // ship). pointerleave releases the flag so a finger sliding off the button
+  // doesn't latch a stuck input.
+  const HELD = { left: 'L', right: 'R', thrust: 'T' };
+  for (const btn of document.querySelectorAll('.touch-bar .tb-btn')) {
+    const act = btn.dataset.act;
+    const tap = btn.classList.contains('tap');
+    const press = (e) => {
+      e.preventDefault();
+      btn.setPointerCapture?.(e.pointerId);
+      btn.classList.add('held');
+      if (tap) {
+        if (act === 'fire') { inp.fired = true; inp.restart = true; }
+      } else if (HELD[act]) inp[HELD[act]] = true;
+    };
+    const release = (e) => {
+      e?.preventDefault?.();
+      btn.classList.remove('held');
+      if (!tap && HELD[act]) inp[HELD[act]] = false;
+    };
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('pointerleave', release);
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
   }
-  function refreshHeld() {
-    inp.L = inp.R = inp.T = false;
-    for (const z of inp.touches.values()) {
-      if (z === 'left')   inp.L = true;
-      if (z === 'right')  inp.R = true;
-      if (z === 'thrust') inp.T = true;
-    }
-    inp.zonesOn = inp.touches.size > 0;
-  }
-  stage.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (!state.ship.alive && e.touches.length >= 2) { inp.restart = true; return; }
-    for (const t of e.changedTouches) {
-      const z = zoneOf(t);
-      if (z === 'fire') { inp.fired = true; continue; }
-      if (z) inp.touches.set(t.identifier, z);
-    }
-    refreshHeld();
-  }, { passive:false });
-  stage.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    for (const t of e.changedTouches) {
-      if (inp.touches.has(t.identifier)) {
-        const z = zoneOf(t);
-        if (z && z !== 'fire') inp.touches.set(t.identifier, z);
-      }
-    }
-    refreshHeld();
-  }, { passive:false });
-  function endTouch(e) {
-    for (const t of e.changedTouches) inp.touches.delete(t.identifier);
-    refreshHeld();
-  }
-  stage.addEventListener('touchend', endTouch);
-  stage.addEventListener('touchcancel', endTouch);
 }
 
 // --- Fullscreen toggle -------------------------------------------------
