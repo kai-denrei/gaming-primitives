@@ -34,7 +34,7 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
     navigator.serviceWorker.getRegistration().then(reg => {
       if (!reg) return;
       const showIfWaiting = () => {
-        if (reg.waiting && !isDismissed()) toast.hidden = false;
+        if (reg.waiting && !isDismissed()) show();
       };
       showIfWaiting();
       reg.addEventListener('updatefound', () => {
@@ -60,9 +60,24 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
       setTimeout(() => window.location.reload(), 200);
     };
 
+    // hide() and show() use BOTH the [hidden] attribute and inline style. The
+    // attribute path is the semantic one; the inline style is a defensive
+    // backstop in case any CSS rule (including our own .gp-update display:flex)
+    // outranks UA's [hidden]{display:none} via cascade order. CSS specificity
+    // for [hidden] and .gp-update is identical (0,1,0), so author rules win by
+    // order — meaning a bare toast.hidden=true would NOT hide. Belt + suspenders.
+    const hide = () => {
+      toast.hidden = true;
+      toast.style.display = 'none';
+    };
+    const show = () => {
+      toast.hidden = false;
+      toast.style.display = '';
+    };
+
     const doDismiss = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
-      toast.hidden = true;
+      hide();
       try { localStorage.setItem(DISMISS_KEY, String(Date.now() + DISMISS_TTL_MS)); } catch (_) {}
     };
 
@@ -80,6 +95,12 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
   })();
 </script>
 <style>
+  /* IMPORTANT: [hidden]{display:none} from the UA stylesheet has specificity
+     (0,1,0) — same as .gp-update — so if we set display:flex on .gp-update
+     unconditionally, author cascade wins and the [hidden] attribute does
+     NOTHING. The explicit .gp-update[hidden] rule below pins the dismissed
+     state. See docs/troubleshooting/update-toast.md. */
+  .gp-update[hidden] { display: none; }
   .gp-update {
     position: fixed;
     top: calc(1rem + env(safe-area-inset-top, 0px));
