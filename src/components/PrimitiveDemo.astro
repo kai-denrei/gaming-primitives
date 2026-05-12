@@ -1,0 +1,103 @@
+---
+import { Code } from 'astro:components';
+import PrimitiveKnob from './PrimitiveKnob.astro';
+
+interface VariantMeta {
+  slug: string;
+  name: string;
+  description: string;
+  status: 'built' | 'stubbed';
+  parameters?: any[];
+  in_the_wild?: { applied: string; note: string }[];
+}
+interface Props {
+  family: string;
+  variants: VariantMeta[];
+}
+const { family, variants } = Astro.props;
+
+// Build-time: load the variant source code for the code panel.
+const sources = import.meta.glob('/public/d/**/*.js', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+function srcFor(slug: string): string | undefined {
+  return sources[`/public/d/${family}/${slug}.js`];
+}
+
+// Trim variants payload sent to the client — only what runner.js needs.
+const wireVariants = variants.map(v => ({
+  slug: v.slug,
+  name: v.name,
+  parameters: v.parameters ?? null,
+}));
+
+const base = import.meta.env.BASE_URL;
+---
+<section
+  class="primitive-demo"
+  data-primitive-demo
+  data-family={family}
+  data-variants={JSON.stringify(wireVariants)}
+>
+  <nav class="variant-tabs" role="tablist" aria-label="Variants">
+    {variants.map(v => (
+      <button
+        type="button"
+        role="tab"
+        data-slug={v.slug}
+        data-built={String(v.status === 'built')}
+        aria-selected="false"
+      >
+        {v.name}
+      </button>
+    ))}
+  </nav>
+
+  <div class="demo-canvas">
+    <canvas aria-label={`${family} variant demo`}></canvas>
+  </div>
+
+  <PrimitiveKnob />
+
+  <section class="in-the-wild" aria-label="In the wild">
+    {variants.filter(v => v.status === 'built' && v.in_the_wild?.length).map(v => (
+      <details data-slug={v.slug}>
+        <summary>In the wild — {v.name}</summary>
+        <ul>
+          {v.in_the_wild!.map(use => (
+            <li><a href={`${base}a/${use.applied}/`}>{use.applied}</a> — {use.note}</li>
+          ))}
+        </ul>
+      </details>
+    ))}
+  </section>
+
+  <section class="code-panel" aria-label="Variant source code">
+    {variants.filter(v => v.status === 'built').map(v => {
+      const code = srcFor(v.slug);
+      if (!code) return null;
+      return (
+        <pre data-slug={v.slug} hidden>
+          <Code code={code} lang="js" theme="github-dark" />
+        </pre>
+      );
+    })}
+  </section>
+</section>
+
+<script src={`${base}d/runner.js`} type="module"></script>
+
+<style>
+  .primitive-demo { display: grid; gap: 1rem; }
+  .variant-tabs { display: flex; gap: 0.4rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.4rem; }
+  .variant-tabs button { flex: 0 0 auto; padding: 0.5em 1em; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--fg-muted); font-family: var(--font-mono); cursor: pointer; scroll-snap-align: start; min-height: 44px; }
+  .variant-tabs button[aria-selected=true],
+  .variant-tabs button[data-active=true] { color: var(--fg); border-color: var(--accent); background: rgba(88,166,255,0.08); }
+  .variant-tabs button[data-built=false] { opacity: 0.5; cursor: not-allowed; }
+  .demo-canvas { aspect-ratio: 16/9; background: #0d1117; border-radius: 6px; overflow: hidden; }
+  .demo-canvas canvas { display: block; width: 100%; touch-action: none; }
+  .in-the-wild summary { font-family: var(--font-mono); font-size: 0.9rem; cursor: pointer; }
+  .in-the-wild ul { font-family: var(--font-serif); margin: 0.4em 0 0; padding-left: 1.2rem; }
+  .code-panel pre { margin: 0; max-height: 24rem; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
+  @media (max-width: 640px) {
+    .demo-canvas { max-height: 50vh; }
+  }
+</style>

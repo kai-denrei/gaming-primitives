@@ -7,7 +7,7 @@ import { loadExtras } from '../../lib/content-loader';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const all = await getCollection('primitives');
+  const all = await getCollection('applied');
   return all
     .filter(e => e.id !== '__test__' && !e.id.startsWith('__test__/'))
     .map(entry => ({ params: { id: entry.data.id }, props: { entry } }));

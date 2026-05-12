@@ -2,11 +2,11 @@
 import PrimitiveCard from './PrimitiveCard.astro';
 import type { CollectionEntry } from 'astro:content';
 
-interface Props { entries: CollectionEntry<'primitives'>[]; }
+interface Props { entries: CollectionEntry<'applied'>[]; }
 const { entries } = Astro.props;
 
 // taxonomy_node is "FAMILY/group" — bucket by family, then by group
-const families = new Map<string, Map<string, CollectionEntry<'primitives'>[]>>();
+const families = new Map<string, Map<string, CollectionEntry<'applied'>[]>>();
 for (const e of entries) {
   const [family, group = 'misc'] = e.data.taxonomy_node.split('/');
   if (!families.has(family)) families.set(family, new Map());
