@@ -48,7 +48,16 @@ const props = Astro.props;
   <Base title={`${props.family.data.name} — Gaming Primitives`}>
     <section class="family-hero">
       <p class="crumb"><a href={`${base}p/`}>← all primitives</a></p>
-      <h1>{props.family.data.name}</h1>
+      <h1>
+        {props.family.data.name}
+        <button
+          type="button"
+          class="deeplink"
+          data-deeplink
+          aria-label="Copy link to this family"
+          title="Copy link"
+        >#</button>
+      </h1>
       <p class="oneliner">{props.family.data.oneliner}</p>
     </section>
 

@@ -47,6 +47,27 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
       });
     }
   </script>
+  <script is:inline>
+    // Global deeplink delegator. Any element with [data-deeplink] triggers
+    // a share/copy of the current URL on click. Uses navigator.share on
+    // mobile (opens the iOS share sheet) and clipboard.writeText otherwise.
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-deeplink]');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const url = window.location.href;
+      try {
+        if (navigator.share && /Mobi|Android|iPhone|iPad/.test(navigator.userAgent)) {
+          await navigator.share({ url, title: document.title }).catch(() => {});
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        }
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1200);
+      } catch (_) {}
+    });
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -109,6 +130,34 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
       align-items: center;
     }
     .sitefoot .metadata { font-size: 0.7rem; }
+
+    /* Global deeplink button — small "#" affordance next to section headers.
+       Tap copies the current URL (encoding the active variant + section state)
+       to clipboard, or opens the native share sheet on mobile. */
+    :global(.deeplink) {
+      background: transparent;
+      border: 0;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      cursor: pointer;
+      padding: 0.1em 0.35em;
+      margin: 0;
+      border-radius: 3px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+      vertical-align: baseline;
+      opacity: 0.55;
+      transition: opacity 0.15s, color 0.15s;
+    }
+    :global(.deeplink:hover),
+    :global(.deeplink:focus-visible) { opacity: 1; color: var(--accent); outline: none; }
+    :global(.deeplink:active) { color: var(--accent); }
+    :global(.deeplink.copied) {
+      color: #39ff14;
+      opacity: 1;
+    }
+    :global(.deeplink.copied::after) { content: ' ✓'; }
     .build-info { font-family: var(--font-mono); font-size: 0.68rem; color: var(--fg-muted); }
     .build-sha { color: var(--fg-muted); text-decoration: none; border-bottom: 1px dotted var(--fg-muted); }
     .build-sha:hover { color: var(--fg); border-bottom-color: var(--fg); }

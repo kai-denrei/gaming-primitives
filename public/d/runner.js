@@ -31,10 +31,52 @@ export async function mountDemo(rootEl) {
 
   let active = null;          // current variant module instance
   let currentMod = null;
+  let currentActiveSlug = null;
   let rafId = null;
   let lastT = 0;
   let paused = false;
   let currentParams = {};
+
+  // Hash contract:
+  //   #<slug>              variant active
+  //   #<slug>/wild         variant active + in-the-wild modal open
+  //   #<slug>/code         variant active + code panel open
+  function parseHash() {
+    const raw = location.hash.slice(1);
+    if (!raw) return [null, null];
+    const [slug, mod] = raw.split('/');
+    return [slug || null, mod || null];
+  }
+  function syncHash() {
+    if (!currentActiveSlug) return;
+    let mod = null;
+    if (itwModal && itwModal.open) mod = 'wild';
+    else if (codeHost && codeHost.open) mod = 'code';
+    const newHash = mod ? `#${currentActiveSlug}/${mod}` : `#${currentActiveSlug}`;
+    if (location.hash !== newHash) history.replaceState(null, '', newHash);
+  }
+  function openItwModalFor(slug) {
+    const variant = variants.find(v => v.slug === slug);
+    if (!variant?.in_the_wild?.length || !itwModal) return;
+    itwTitle.textContent = `In the wild — ${variant.name}`;
+    itwList.innerHTML = '';
+    for (const use of variant.in_the_wild) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.className = 'itw-applied';
+      a.textContent = use.applied;
+      a.href = `${base}a/${use.applied}/`;
+      li.appendChild(a);
+      const note = document.createElement('div');
+      note.className = 'itw-note';
+      note.textContent = use.note;
+      li.appendChild(note);
+      itwList.appendChild(li);
+    }
+    if (typeof itwModal.showModal === 'function') itwModal.showModal();
+    else itwModal.setAttribute('open', '');
+    syncHash();
+  }
 
   function sizeCanvas(logical) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -179,8 +221,8 @@ export async function mountDemo(rootEl) {
       pre.hidden = pre.dataset.slug !== slug;
     });
 
-    // URL hash
-    if (location.hash !== `#${slug}`) history.replaceState(null, '', `#${slug}`);
+    currentActiveSlug = slug;
+    syncHash();
   }
 
   // Tab clicks
@@ -189,42 +231,44 @@ export async function mountDemo(rootEl) {
     if (btn) activate(btn.dataset.slug);
   });
 
-  // In-the-wild modal: badge opens, close button + backdrop dismiss.
-  // Populated from variants[].in_the_wild at click time.
+  // In-the-wild modal: badge opens for active variant. Close button +
+  // backdrop dismiss. URL hash reflects open/close state via syncHash().
   if (itwBadge && itwModal && itwList && itwTitle) {
     itwBadge.addEventListener('click', () => {
       const slug = itwBadge.dataset.slug;
-      const variant = variants.find(v => v.slug === slug);
-      if (!variant?.in_the_wild?.length) return;
-      itwTitle.textContent = `In the wild — ${variant.name}`;
-      itwList.innerHTML = '';
-      for (const use of variant.in_the_wild) {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.className = 'itw-applied';
-        a.textContent = use.applied;
-        a.href = `${base}a/${use.applied}/`;
-        li.appendChild(a);
-        const note = document.createElement('div');
-        note.className = 'itw-note';
-        note.textContent = use.note;
-        li.appendChild(note);
-        itwList.appendChild(li);
-      }
-      if (typeof itwModal.showModal === 'function') itwModal.showModal();
-      else itwModal.setAttribute('open', '');
+      openItwModalFor(slug);
     });
     itwClose?.addEventListener('click', () => itwModal.close());
     // Tap outside the dialog content (on the backdrop) closes it.
     itwModal.addEventListener('click', (e) => {
       if (e.target === itwModal) itwModal.close();
     });
+    // Dialog 'close' fires on dialog.close(), ESC, etc. Reflect in URL.
+    itwModal.addEventListener('close', () => syncHash());
   }
 
-  // Hash change (deep links from applied decomposition chips)
-  addEventListener('hashchange', () => {
-    const slug = location.hash.slice(1);
-    if (slug && builtSlugs.has(slug)) activate(slug);
+  // Code panel open/close → URL reflects via syncHash().
+  if (codeHost) {
+    codeHost.addEventListener('toggle', () => syncHash());
+  }
+
+  // Hash change (back/forward, manual URL edit, deep-link from elsewhere).
+  // Reconcile variant + section modifiers with current state.
+  addEventListener('hashchange', async () => {
+    const [slug, mod] = parseHash();
+    if (slug && builtSlugs.has(slug) && slug !== currentActiveSlug) {
+      await activate(slug);
+    }
+    if (mod === 'wild' && currentActiveSlug && itwModal && !itwModal.open) {
+      openItwModalFor(currentActiveSlug);
+    } else if (mod !== 'wild' && itwModal?.open) {
+      itwModal.close();
+    }
+    if (mod === 'code' && codeHost && !codeHost.open) {
+      codeHost.open = true;
+    } else if (mod !== 'code' && codeHost?.open) {
+      codeHost.open = false;
+    }
   });
 
   // Pause when tab hidden
@@ -238,11 +282,17 @@ export async function mountDemo(rootEl) {
     if (currentMod) sizeCanvas(currentMod.LOGICAL);
   });
 
-  // Initial: URL hash → first built → nothing
-  const initial = builtSlugs.has(location.hash.slice(1))
-    ? location.hash.slice(1)
+  // Initial: parse URL hash for slug + optional modifier (wild|code).
+  // Falls back to the first built variant when hash is empty or unrecognized.
+  const [hashSlug, hashMod] = parseHash();
+  const initial = hashSlug && builtSlugs.has(hashSlug)
+    ? hashSlug
     : variants.find(v => builtSlugs.has(v.slug))?.slug;
-  if (initial) activate(initial);
+  if (initial) {
+    await activate(initial);
+    if (hashMod === 'wild') openItwModalFor(initial);
+    else if (hashMod === 'code' && codeHost) codeHost.open = true;
+  }
 }
 
 // Auto-mount any <primitive-demo data-family="..."> on the page.

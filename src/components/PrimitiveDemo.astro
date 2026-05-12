@@ -58,6 +58,14 @@ const base = import.meta.env.BASE_URL;
     <h2 class="variant-name"></h2>
     <button
       type="button"
+      class="deeplink"
+      data-deeplink
+      aria-label="Copy link to this variant"
+      title="Copy link"
+    >#</button>
+    <span class="variant-meta-spacer"></span>
+    <button
+      type="button"
       class="itw-badge"
       hidden
       aria-label="See where this variant appears in real games"
@@ -71,7 +79,16 @@ const base = import.meta.env.BASE_URL;
   <PrimitiveKnob />
 
   <details class="code-panel">
-    <summary>source</summary>
+    <summary>
+      source
+      <button
+        type="button"
+        class="deeplink"
+        data-deeplink
+        aria-label="Copy link to this code panel"
+        title="Copy link"
+      >#</button>
+    </summary>
     {variants.filter(v => v.status === 'built').map(v => {
       const code = srcFor(v.slug);
       if (!code) return null;
@@ -87,6 +104,13 @@ const base = import.meta.env.BASE_URL;
     <header class="itw-modal-head">
       <div class="itw-modal-handle" aria-hidden="true"></div>
       <h3 id="itw-modal-title" class="itw-modal-title"></h3>
+      <button
+        type="button"
+        class="deeplink"
+        data-deeplink
+        aria-label="Copy link to this in-the-wild list"
+        title="Copy link"
+      >#</button>
       <button type="button" class="itw-modal-close" aria-label="Close">×</button>
     </header>
     <ul class="itw-modal-list"></ul>
@@ -135,9 +159,10 @@ const base = import.meta.env.BASE_URL;
     margin: 0;
     color: var(--fg);
     font-weight: 600;
-    flex: 1;
     min-width: 0;
   }
+  .variant-meta .variant-meta-spacer { flex: 1; }
+  .variant-meta .deeplink { font-size: 0.95em; }
   .itw-badge {
     background: transparent;
     color: var(--accent);
