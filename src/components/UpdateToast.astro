@@ -2,32 +2,44 @@
 ---
 <aside id="gp-update" class="gp-update" hidden>
   <span>New version available.</span>
-  <button id="gp-update-btn">Refresh</button>
+  <button id="gp-update-btn" type="button">Refresh</button>
 </aside>
 <script is:inline>
   (() => {
     if (!('serviceWorker' in navigator)) return;
     const toast = document.getElementById('gp-update');
     const btn = document.getElementById('gp-update-btn');
-    let waiting = null;
-    navigator.serviceWorker.getRegistration('/').then(reg => {
+
+    // getRegistration() with no scope arg returns the registration controlling
+    // the current page. On GH Pages the scope is /gaming-primitives/, not /, so
+    // hard-coding '/' returns undefined and the toast never sees an update.
+    navigator.serviceWorker.getRegistration().then(reg => {
       if (!reg) return;
-      const promote = () => {
-        if (reg.waiting) { waiting = reg.waiting; toast.hidden = false; }
+      const showIfWaiting = () => {
+        if (reg.waiting) toast.hidden = false;
       };
-      promote();
+      showIfWaiting();
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) promote();
-        });
+        nw.addEventListener('statechange', showIfWaiting);
       });
     });
-    btn?.addEventListener('click', () => {
-      if (!waiting) return;
-      waiting.postMessage({ type: 'SKIP_WAITING' });
+
+    btn?.addEventListener('click', async () => {
+      // Re-fetch the registration at click time — the SW state may have advanced
+      // since page load. If a waiting SW exists, ask it to skip-waiting and
+      // wait for controllerchange to reload. If not (rare race), just reload.
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Fallback: if controllerchange doesn't fire within 2s, reload anyway.
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        window.location.reload();
+      }
     });
+
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
     });
@@ -38,10 +50,8 @@
     position: fixed;
     top: calc(1rem + env(safe-area-inset-top, 0px));
     right: max(1rem, env(safe-area-inset-right, 0px));
-    left: max(1rem, env(safe-area-inset-left, 0px));
-    max-width: 22rem;
-    margin-left: auto;
-    background: var(--surface);
+    max-width: calc(100vw - max(1rem, env(safe-area-inset-left, 0px)) - max(1rem, env(safe-area-inset-right, 0px)));
+    background: #161b22;
     border: 1px solid var(--accent);
     padding: 0.6rem 0.8rem;
     border-radius: 6px;
@@ -49,9 +59,21 @@
     font-size: 0.85rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 0.6rem;
     z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
-  .gp-update button { background: var(--accent); color: #0d1117; border: 0; padding: 0.4em 0.9em; border-radius: 3px; cursor: pointer; font-family: inherit; min-height: 36px; flex-shrink: 0; }
-</style>
+  .gp-update button {
+    background: var(--accent);
+    color: #0d1117;
+    border: 0;
+    padding: 0 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    min-height: 44px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gp-update button:active { background: #ffffff; }

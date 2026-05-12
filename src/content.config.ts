@@ -55,6 +55,7 @@ const inTheWild = z.array(z.object({
 
 const primitiveFamily = z.object({
   slug: z.string().regex(/^[a-z][a-z0-9-]+$/),
+  order: z.number().int().min(1).max(99),
   name: z.string(),
   oneliner: z.string(),
   variants: z.array(z.string()).min(1),

@@ -1,5 +1,6 @@
 ---
 slug: bullets
+order: 2
 name: Bullets
 oneliner: How projectiles are spawned, aimed, and expire.
 variants:

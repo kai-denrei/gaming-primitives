@@ -1,5 +1,6 @@
 ---
 slug: procedural
+order: 10
 name: Procedural
 oneliner: How content is generated rather than authored.
 variants:
