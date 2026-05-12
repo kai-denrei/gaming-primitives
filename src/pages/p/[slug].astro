@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import PrimitiveDemo from '../../components/PrimitiveDemo.astro';
 
 export async function getStaticPaths() {
   const families = await getCollection('primitiveFamilies');
@@ -65,16 +66,20 @@ const props = Astro.props;
         </ul>
       </section>
     ) : (
-      <section class="built-demo">
-        <p class="todo">[demo widget mounts here — Tasks 14–17]</p>
-        <ul>
-          {props.variants.map(v => (
-            <li>
-              <strong>{v.data.name}</strong> — <em>{v.data.status}</em>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <PrimitiveDemo
+        family={props.family.data.slug}
+        variants={props.variants
+          .sort((a, b) => props.family.data.variants.indexOf(a.data.slug) - props.family.data.variants.indexOf(b.data.slug))
+          .map(v => ({
+            slug: v.data.slug,
+            name: v.data.name,
+            description: v.data.description,
+            status: v.data.status,
+            parameters: v.data.parameters,
+            in_the_wild: v.data.in_the_wild,
+          }))
+        }
+      />
     )}
   </Base>
 )}
