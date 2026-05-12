@@ -3,6 +3,8 @@ import '../styles/tokens.css';
 import '../styles/prose.css';
 import InstallButton from '../components/InstallButton.astro';
 import UpdateToast from '../components/UpdateToast.astro';
+import pkg from '../../package.json';
+import { execSync } from 'node:child_process';
 
 interface Props {
   title: string;
@@ -11,6 +13,16 @@ interface Props {
 }
 const { title, description = 'A catalog of irreducible gameplay primitives.', themeColor = '#0d1117' } = Astro.props;
 const base = import.meta.env.BASE_URL;
+
+const buildSha = (() => {
+  try { return execSync('git rev-parse --short HEAD').toString().trim(); }
+  catch { return 'dev'; }
+})();
+const buildDate = (() => {
+  try { return execSync('git log -1 --format=%cd --date=short').toString().trim(); }
+  catch { return new Date().toISOString().slice(0, 10); }
+})();
+const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
 ---
 <!doctype html>
 <html lang="en">
@@ -50,6 +62,13 @@ const base = import.meta.env.BASE_URL;
   <main><slot /></main>
   <footer class="sitefoot">
     <span class="metadata">primitives ≠ genres ≠ games. <a href={`${base}about/`}>why this exists</a></span>
+    <span class="build-info">
+      <span class="build-version">v{pkg.version}</span>
+      <span class="build-sep">·</span>
+      <a class="build-sha" href={`${repoUrl}/commit/${buildSha}`} rel="noopener" target="_blank">{buildSha}</a>
+      <span class="build-sep">·</span>
+      <span class="build-date">{buildDate}</span>
+    </span>
   </footer>
   <UpdateToast />
   <style>
@@ -67,7 +86,20 @@ const base = import.meta.env.BASE_URL;
     .topnav a { font-family: var(--font-mono); margin-left: 1.25rem; color: var(--fg-muted); text-decoration: none; font-size: 0.9rem; }
     .topnav a:hover { color: var(--fg); }
     main { min-height: 70vh; padding: 2rem 1.5rem; }
-    .sitefoot { padding: 1.5rem; border-top: 1px solid var(--border); text-align: center; }
+    .sitefoot {
+      padding: 1.5rem;
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid var(--border);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .build-info { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); }
+    .build-sha { color: var(--fg-muted); text-decoration: none; border-bottom: 1px dotted var(--fg-muted); }
+    .build-sha:hover { color: var(--fg); border-bottom-color: var(--fg); }
+    .build-sep { opacity: 0.5; margin: 0 0.3em; }
   </style>
 </body>
 </html>
