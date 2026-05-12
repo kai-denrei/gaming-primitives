@@ -1,5 +1,6 @@
 ---
 slug: collision
+order: 4
 name: Collision
 oneliner: How shapes test for intersection.
 variants:

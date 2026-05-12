@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import FamilyCard from '../../components/FamilyCard.astro';
 import { getCollection } from 'astro:content';
 
-const families = (await getCollection('primitiveFamilies')).sort((a, b) => a.data.name.localeCompare(b.data.name));
+const families = (await getCollection('primitiveFamilies')).sort((a, b) => a.data.order - b.data.order);
 const variants = await getCollection('primitiveVariants');
 
 function builtCount(familySlug: string) {
@@ -31,6 +31,7 @@ const totalVariants = variants.length;
       <li>
         <FamilyCard
           slug={f.data.slug}
+          order={f.data.order}
           name={f.data.name}
           oneliner={f.data.oneliner}
           variantCount={f.data.variants.length}

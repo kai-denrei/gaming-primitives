@@ -1,5 +1,6 @@
 ---
 slug: pathfinding
+order: 9
 name: Pathfinding
 oneliner: How NPCs choose a route from A to B.
 variants:

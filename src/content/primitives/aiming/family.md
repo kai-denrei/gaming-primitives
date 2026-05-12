@@ -1,5 +1,6 @@
 ---
 slug: aiming
+order: 1
 name: Aiming
 oneliner: How a weapon or actor selects a target direction.
 variants:

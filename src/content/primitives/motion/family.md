@@ -1,5 +1,6 @@
 ---
 slug: motion
+order: 7
 name: Motion
 oneliner: How things move under player or AI input.
 variants:

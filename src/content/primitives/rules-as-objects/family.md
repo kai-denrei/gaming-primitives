@@ -1,5 +1,6 @@
 ---
 slug: rules-as-objects
+order: 11
 name: Rules as Objects
 oneliner: Game rules represented as in-world entities the player can manipulate.
 variants:
