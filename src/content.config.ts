@@ -37,11 +37,10 @@ const primitiveStub = z.object({
 });
 
 export const collections = {
-  primitives: defineCollection({
+  applied: defineCollection({
     loader: glob({
       pattern: '**/stub.md',
-      base: './src/content/primitives',
-      // The id is the parent directory name: 'asteroids-rotate-thrust/stub' → 'asteroids-rotate-thrust'
+      base: './src/content/applied',
       generateId: ({ entry }) => entry.replace(/\/stub\.md$/, '').replace(/\.md$/, ''),
     }),
     schema: primitiveStub,
