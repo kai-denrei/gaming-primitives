@@ -1,6 +1,6 @@
 // Gaming Primitives hub SW. Hand-rolled, KikaCentroid-derived.
 // Bump CACHE_VERSION when shipping a new build.
-const CACHE_VERSION = 'v0.2.1';
+const CACHE_VERSION = 'v0.2.2';
 const PRECACHE = `gp-hub-precache-${CACHE_VERSION}`;
 const RUNTIME  = `gp-hub-runtime-${CACHE_VERSION}`;
 

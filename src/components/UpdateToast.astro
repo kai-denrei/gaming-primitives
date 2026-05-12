@@ -1,22 +1,40 @@
 ---
+const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
 ---
 <aside id="gp-update" class="gp-update" hidden>
-  <span>New version available.</span>
+  <span class="gp-update-text">New version available.</span>
   <button id="gp-update-btn" type="button">Refresh</button>
+  <button id="gp-update-close" type="button" aria-label="Dismiss">×</button>
 </aside>
 <script is:inline>
   (() => {
     if (!('serviceWorker' in navigator)) return;
     const toast = document.getElementById('gp-update');
     const btn = document.getElementById('gp-update-btn');
+    const closeBtn = document.getElementById('gp-update-close');
+
+    // Persisted dismiss: don't show again for 24h after the user closes the
+    // toast. Survives reloads — important when the SW lifecycle is in a
+    // deadlock and re-surfacing the toast on every page load is misleading.
+    const DISMISS_KEY = 'gp_update_dismissed_until';
+    const DISMISS_TTL_MS = 24 * 60 * 60 * 1000;
+    let dismissedUntil = 0;
+    try { dismissedUntil = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10); } catch (_) {}
+    const isDismissed = () => Date.now() < dismissedUntil;
+
+    // Track the SHA the page was built against so we only surface the toast
+    // when the *waiting* SW would actually serve a different SHA. The SHA is
+    // in the footer (.build-sha); when the new SW is for the same SHA we are
+    // already serving, suppress.
+    const currentSha = document.querySelector('.build-sha')?.textContent?.trim() || '';
 
     // getRegistration() with no scope arg returns the registration controlling
     // the current page. On GH Pages the scope is /gaming-primitives/, not /, so
-    // hard-coding '/' returns undefined and the toast never sees an update.
+    // hard-coding '/' returned undefined and the toast never saw an update.
     navigator.serviceWorker.getRegistration().then(reg => {
       if (!reg) return;
       const showIfWaiting = () => {
-        if (reg.waiting) toast.hidden = false;
+        if (reg.waiting && !isDismissed()) toast.hidden = false;
       };
       showIfWaiting();
       reg.addEventListener('updatefound', () => {
@@ -42,16 +60,19 @@
       setTimeout(() => window.location.reload(), 200);
     };
 
+    const doDismiss = (e) => {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      toast.hidden = true;
+      try { localStorage.setItem(DISMISS_KEY, String(Date.now() + DISMISS_TTL_MS)); } catch (_) {}
+    };
+
     // Belt + suspenders: click is the canonical event, but iOS PWA occasionally
     // suppresses synthetic clicks on position:fixed buttons after a scroll.
     // Adding pointerup as a fallback covers that case.
     btn?.addEventListener('click', doRefresh);
     btn?.addEventListener('pointerup', doRefresh);
-    // Tap anywhere on the toast (not just the button) refreshes too — bigger
-    // hit area, harder to fumble.
-    toast?.addEventListener('click', (e) => {
-      if (e.target !== btn) doRefresh(e);
-    });
+    closeBtn?.addEventListener('click', doDismiss);
+    closeBtn?.addEventListener('pointerup', doDismiss);
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
@@ -76,7 +97,8 @@
     z-index: 100;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
-  .gp-update button {
+  .gp-update-text { flex: 1; min-width: 0; }
+  .gp-update #gp-update-btn {
     background: var(--accent);
     color: #0d1117;
     border: 0;
@@ -89,4 +111,19 @@
     flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
   }
-  .gp-update button:active { background: #ffffff; }
+  .gp-update #gp-update-btn:active { background: #ffffff; }
+  .gp-update #gp-update-close {
+    background: transparent;
+    color: var(--fg-muted);
+    border: 0;
+    font-family: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gp-update #gp-update-close:active { color: var(--fg); }
