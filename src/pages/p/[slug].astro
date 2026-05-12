@@ -1,0 +1,96 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const families = await getCollection('primitiveFamilies');
+  const applied = await getCollection('applied');
+  const variants = await getCollection('primitiveVariants');
+
+  const familyPaths = families.map(f => ({
+    params: { slug: f.data.slug },
+    props: {
+      kind: 'family' as const,
+      family: f,
+      variants: variants.filter(v => v.id.startsWith(`${f.data.slug}/variants/`)),
+    },
+  }));
+
+  const familySlugs = new Set(families.map(f => f.data.slug));
+  const redirectPaths = applied
+    .filter(a => !familySlugs.has(a.id))   // collision-proof: never shadow a family
+    .map(a => ({
+      params: { slug: a.id },
+      props: { kind: 'redirect' as const, target: `/a/${a.id}/` },
+    }));
+
+  return [...familyPaths, ...redirectPaths];
+}
+
+const base = import.meta.env.BASE_URL;
+const props = Astro.props;
+---
+{props.kind === 'redirect' && (
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta http-equiv="refresh" content={`0; url=${base}${props.target.replace(/^\//, '')}`} />
+      <link rel="canonical" href={`${base}${props.target.replace(/^\//, '')}`} />
+      <title>Moved — Gaming Primitives</title>
+    </head>
+    <body>
+      <p>This page has moved. <a href={`${base}${props.target.replace(/^\//, '')}`}>Continue to the new location</a>.</p>
+    </body>
+  </html>
+)}
+{props.kind === 'family' && (
+  <Base title={`${props.family.data.name} — Gaming Primitives`}>
+    <section class="family-hero">
+      <p class="crumb"><a href={`${base}p/`}>← all primitives</a></p>
+      <h1>{props.family.data.name}</h1>
+      <p class="oneliner">{props.family.data.oneliner}</p>
+    </section>
+
+    {props.variants.filter(v => v.data.status === 'built').length === 0 ? (
+      <section class="stub-grid">
+        <p class="planned-note">This family is planned. The variants below describe what will land here.</p>
+        <ul>
+          {props.variants.sort((a, b) => a.data.slug.localeCompare(b.data.slug)).map(v => (
+            <li class="stub-card">
+              <h3>{v.data.name}</h3>
+              <p>{v.data.description}</p>
+              <p class="badge">Planned</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : (
+      <section class="built-demo">
+        <p class="todo">[demo widget mounts here — Tasks 14–17]</p>
+        <ul>
+          {props.variants.map(v => (
+            <li>
+              <strong>{v.data.name}</strong> — <em>{v.data.status}</em>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </Base>
+)}
+
+<style>
+  .family-hero { max-width: 48rem; margin: 2rem auto 1.5rem; }
+  .family-hero .crumb { font-family: var(--font-mono); font-size: 0.85rem; }
+  .family-hero .crumb a { color: var(--fg-muted); text-decoration: none; }
+  .family-hero h1 { font-family: var(--font-mono); font-size: 2rem; margin: 0.2em 0; }
+  .family-hero .oneliner { font-family: var(--font-serif); font-size: 1.1rem; color: var(--fg-muted); }
+  .stub-grid { max-width: 64rem; margin: 0 auto; }
+  .planned-note { font-family: var(--font-mono); color: var(--fg-muted); }
+  .stub-grid ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+  .stub-card { border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+  .stub-card h3 { font-family: var(--font-mono); margin: 0 0 0.3em; font-size: 1rem; }
+  .stub-card p { margin: 0; font-family: var(--font-serif); font-size: 0.95rem; line-height: 1.4; }
+  .stub-card .badge { font-family: var(--font-mono); font-size: 0.7rem; color: var(--fg-muted); margin-top: 0.5em; }
+  .built-demo { max-width: 56rem; margin: 0 auto; }
+</style>
