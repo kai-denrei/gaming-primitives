@@ -1,4 +1,4 @@
-// Each primitive lives in src/content/primitives/{id}/ with up to three files:
+// Each applied primitive lives in src/content/applied/{id}/ with up to three files:
 // stub.md (collection entry), research.md, spec.md. Astro's collection only
 // reads the first; this helper reads the other two from disk at build time.
 //
@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PRIMS = join(HERE, '..', 'content', 'primitives');
+const PRIMS = join(HERE, '..', 'content', 'applied');
 
 export type PrimitiveExtras = {
   research?: { rawContent: string };
