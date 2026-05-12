@@ -23,6 +23,7 @@ export async function mountDemo(rootEl) {
   const codeHost = rootEl.querySelector('.code-panel');
 
   let active = null;          // current variant module instance
+  let currentMod = null;
   let rafId = null;
   let lastT = 0;
   let paused = false;
@@ -108,14 +109,25 @@ export async function mountDemo(rootEl) {
     active = null;
 
     // Visual: active tab class
-    tabHost.querySelectorAll('[data-slug]').forEach(b => b.dataset.active = String(b.dataset.slug === slug));
+    tabHost.querySelectorAll('[data-slug]').forEach(b => {
+      const isActive = b.dataset.slug === slug;
+      b.dataset.active = String(isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
 
     // Reset knobs from the new variant's defaults
     knobHost.innerHTML = '';
     currentParams = defaultsFor(variant.parameters);
 
     // Dynamic-import the module
-    const mod = await import(`/d/${family}/${slug}.js`);
+    let mod;
+    try {
+      mod = await import(`/d/${family}/${slug}.js`);
+    } catch (err) {
+      console.error(`[primitive-demo] failed to load variant '${slug}' in '${family}':`, err);
+      return;
+    }
+    currentMod = mod;
 
     // Knob mount with live-apply
     for (const p of variant.parameters) {
@@ -167,7 +179,7 @@ export async function mountDemo(rootEl) {
 
   // Resize: re-size canvas without reseeding state
   window.addEventListener('resize', () => {
-    if (active) sizeCanvas(active.LOGICAL ?? { w: 800, h: 450 });
+    if (currentMod) sizeCanvas(currentMod.LOGICAL);
   });
 
   // Initial: URL hash → first built → nothing
