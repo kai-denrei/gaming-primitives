@@ -34,6 +34,24 @@
   })();
 </script>
 <style>
-  .gp-update { position: fixed; top: 1rem; right: 1rem; background: var(--surface); border: 1px solid var(--accent); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem; }
-  .gp-update button { background: var(--accent); color: #0d1117; border: 0; padding: 0.2em 0.7em; border-radius: 3px; cursor: pointer; font-family: inherit; }
+  .gp-update {
+    position: fixed;
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    left: max(1rem, env(safe-area-inset-left, 0px));
+    max-width: 22rem;
+    margin-left: auto;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    z-index: 100;
+  }
+  .gp-update button { background: var(--accent); color: #0d1117; border: 0; padding: 0.4em 0.9em; border-radius: 3px; cursor: pointer; font-family: inherit; min-height: 36px; flex-shrink: 0; }
 </style>
