@@ -85,17 +85,31 @@ const props = Astro.props;
 )}
 
 <style>
-  .family-hero { max-width: 48rem; margin: 2rem auto 1.5rem; }
-  .family-hero .crumb { font-family: var(--font-mono); font-size: 0.85rem; }
+  /* Compact family-hero on mobile so canvas + knobs fit above the fold.
+     Desktop sizes restored at 641+ in the @media below. */
+  .family-hero { max-width: 56rem; margin: 0.5rem auto 0.4rem; }
+  .family-hero .crumb { font-family: var(--font-mono); font-size: 0.72rem; margin: 0 0 0.1em; }
   .family-hero .crumb a { color: var(--fg-muted); text-decoration: none; }
-  .family-hero h1 { font-family: var(--font-mono); font-size: 2rem; margin: 0.2em 0; }
-  .family-hero .oneliner { font-family: var(--font-serif); font-size: 1.1rem; color: var(--fg-muted); }
+  .family-hero h1 { font-family: var(--font-mono); font-size: 1.5rem; margin: 0; line-height: 1.1; }
+  .family-hero .oneliner { font-family: var(--font-serif); font-size: 0.9rem; color: var(--fg-muted); margin: 0.25em 0 0; line-height: 1.35; }
   .stub-grid { max-width: 64rem; margin: 0 auto; }
-  .planned-note { font-family: var(--font-mono); color: var(--fg-muted); }
-  .stub-grid ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
-  .stub-card { border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
-  .stub-card h3 { font-family: var(--font-mono); margin: 0 0 0.3em; font-size: 1rem; }
-  .stub-card p { margin: 0; font-family: var(--font-serif); font-size: 0.95rem; line-height: 1.4; }
-  .stub-card .badge { font-family: var(--font-mono); font-size: 0.7rem; color: var(--fg-muted); margin-top: 0.5em; }
-  .built-demo { max-width: 56rem; margin: 0 auto; }
+  .planned-note { font-family: var(--font-mono); color: var(--fg-muted); font-size: 0.85rem; }
+  .stub-grid ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0.8rem; }
+  .stub-card { border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem; }
+  .stub-card h3 { font-family: var(--font-mono); margin: 0 0 0.25em; font-size: 0.95rem; }
+  .stub-card p { margin: 0; font-family: var(--font-serif); font-size: 0.9rem; line-height: 1.35; }
+  .stub-card .badge { font-family: var(--font-mono); font-size: 0.68rem; color: var(--fg-muted); margin-top: 0.4em; }
+
+  @media (min-width: 641px) {
+    .family-hero { margin: 2rem auto 1.5rem; }
+    .family-hero .crumb { font-size: 0.85rem; }
+    .family-hero h1 { font-size: 2rem; margin: 0.2em 0; }
+    .family-hero .oneliner { font-size: 1.1rem; }
+    .planned-note { font-size: 1rem; }
+    .stub-grid ul { gap: 1rem; }
+    .stub-card { padding: 1rem; }
+    .stub-card h3 { font-size: 1rem; }
+    .stub-card p { font-size: 0.95rem; line-height: 1.4; }
+    .stub-card .badge { font-size: 0.7rem; }
+  }
 </style>

@@ -72,34 +72,53 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
   </footer>
   <UpdateToast />
   <style>
+    /* Mobile-first compact chrome — topbar in one row, small mono. Desktop
+       (>=641px) loosens to the original spacing in the @media below. */
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem;
-      padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-      padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
-      padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+      gap: 0.6rem;
+      padding: 0.6rem 1rem;
+      padding-top: calc(0.6rem + env(safe-area-inset-top, 0px));
+      padding-left: max(1rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1rem, env(safe-area-inset-right, 0px));
       border-bottom: 1px solid var(--border);
     }
-    .brand { font-family: var(--font-mono); font-weight: 600; color: var(--fg); text-decoration: none; }
-    .topnav a { font-family: var(--font-mono); margin-left: 1.25rem; color: var(--fg-muted); text-decoration: none; font-size: 0.9rem; }
+    .brand { font-family: var(--font-mono); font-weight: 600; color: var(--fg); text-decoration: none; font-size: 0.85rem; line-height: 1.1; flex-shrink: 0; }
+    .topnav { display: flex; align-items: center; gap: 0.7rem; }
+    .topnav a { font-family: var(--font-mono); color: var(--fg-muted); text-decoration: none; font-size: 0.72rem; white-space: nowrap; }
     .topnav a:hover { color: var(--fg); }
-    main { min-height: 70vh; padding: 2rem 1.5rem; }
+    main { min-height: 70vh; padding: 1rem; }
+
+    @media (min-width: 641px) {
+      .topbar { padding: 1rem 1.5rem; padding-top: calc(1rem + env(safe-area-inset-top, 0px)); gap: 1rem; }
+      .brand { font-size: 1rem; }
+      .topnav { gap: 1.25rem; }
+      .topnav a { font-size: 0.9rem; }
+      main { padding: 2rem 1.5rem; }
+    }
     .sitefoot {
-      padding: 1.5rem;
-      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      padding: 0.7rem 1rem;
+      padding-bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
       border-top: 1px solid var(--border);
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.15rem;
       align-items: center;
     }
-    .build-info { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); }
+    .sitefoot .metadata { font-size: 0.7rem; }
+    .build-info { font-family: var(--font-mono); font-size: 0.68rem; color: var(--fg-muted); }
     .build-sha { color: var(--fg-muted); text-decoration: none; border-bottom: 1px dotted var(--fg-muted); }
     .build-sha:hover { color: var(--fg); border-bottom-color: var(--fg); }
     .build-sep { opacity: 0.5; margin: 0 0.3em; }
+
+    @media (min-width: 641px) {
+      .sitefoot { padding: 1.5rem; gap: 0.4rem; }
+      .sitefoot .metadata { font-size: 0.85rem; }
+      .build-info { font-size: 0.75rem; }
+    }
   </style>
 </body>
 </html>

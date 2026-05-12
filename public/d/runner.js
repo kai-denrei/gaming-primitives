@@ -21,6 +21,13 @@ export async function mountDemo(rootEl) {
   const knobHost = rootEl.querySelector('.demo-knobs');
   const tabHost = rootEl.querySelector('.variant-tabs');
   const codeHost = rootEl.querySelector('.code-panel');
+  const nameHost = rootEl.querySelector('.variant-name');
+  const itwBadge = rootEl.querySelector('.itw-badge');
+  const itwModal = rootEl.querySelector('.itw-modal');
+  const itwTitle = itwModal?.querySelector('.itw-modal-title');
+  const itwList = itwModal?.querySelector('.itw-modal-list');
+  const itwClose = itwModal?.querySelector('.itw-modal-close');
+  const base = rootEl.dataset.base || '/';
 
   let active = null;          // current variant module instance
   let currentMod = null;
@@ -115,6 +122,19 @@ export async function mountDemo(rootEl) {
       b.setAttribute('aria-selected', String(isActive));
     });
 
+    // Active variant header — name + "+N" in-the-wild badge
+    if (nameHost) nameHost.textContent = variant.name;
+    if (itwBadge) {
+      const n = (variant.in_the_wild || []).length;
+      if (n > 0) {
+        itwBadge.hidden = false;
+        itwBadge.textContent = `+${n}`;
+        itwBadge.dataset.slug = slug;
+      } else {
+        itwBadge.hidden = true;
+      }
+    }
+
     // Reset knobs from the new variant's defaults
     knobHost.innerHTML = '';
     currentParams = defaultsFor(variant.parameters);
@@ -168,6 +188,38 @@ export async function mountDemo(rootEl) {
     const btn = e.target.closest('[data-slug]');
     if (btn) activate(btn.dataset.slug);
   });
+
+  // In-the-wild modal: badge opens, close button + backdrop dismiss.
+  // Populated from variants[].in_the_wild at click time.
+  if (itwBadge && itwModal && itwList && itwTitle) {
+    itwBadge.addEventListener('click', () => {
+      const slug = itwBadge.dataset.slug;
+      const variant = variants.find(v => v.slug === slug);
+      if (!variant?.in_the_wild?.length) return;
+      itwTitle.textContent = `In the wild — ${variant.name}`;
+      itwList.innerHTML = '';
+      for (const use of variant.in_the_wild) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'itw-applied';
+        a.textContent = use.applied;
+        a.href = `${base}a/${use.applied}/`;
+        li.appendChild(a);
+        const note = document.createElement('div');
+        note.className = 'itw-note';
+        note.textContent = use.note;
+        li.appendChild(note);
+        itwList.appendChild(li);
+      }
+      if (typeof itwModal.showModal === 'function') itwModal.showModal();
+      else itwModal.setAttribute('open', '');
+    });
+    itwClose?.addEventListener('click', () => itwModal.close());
+    // Tap outside the dialog content (on the backdrop) closes it.
+    itwModal.addEventListener('click', (e) => {
+      if (e.target === itwModal) itwModal.close();
+    });
+  }
 
   // Hash change (deep links from applied decomposition chips)
   addEventListener('hashchange', () => {

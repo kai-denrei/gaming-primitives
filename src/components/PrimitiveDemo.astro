@@ -22,11 +22,13 @@ function srcFor(slug: string): string | undefined {
   return sources[`/public/d/${family}/${slug}.js`];
 }
 
-// Trim variants payload sent to the client — only what runner.js needs.
+// Wire payload — runner.js reads these on tab activate. Includes
+// in_the_wild so the +N modal can populate without a second fetch.
 const wireVariants = variants.map(v => ({
   slug: v.slug,
   name: v.name,
   parameters: v.parameters ?? null,
+  in_the_wild: v.in_the_wild ?? [],
 }));
 
 const base = import.meta.env.BASE_URL;
@@ -35,6 +37,7 @@ const base = import.meta.env.BASE_URL;
   class="primitive-demo"
   data-primitive-demo
   data-family={family}
+  data-base={base}
   data-variants={JSON.stringify(wireVariants)}
 >
   <nav class="variant-tabs" role="tablist" aria-label="Variants">
@@ -51,26 +54,24 @@ const base = import.meta.env.BASE_URL;
     ))}
   </nav>
 
+  <header class="variant-meta">
+    <h2 class="variant-name"></h2>
+    <button
+      type="button"
+      class="itw-badge"
+      hidden
+      aria-label="See where this variant appears in real games"
+    ></button>
+  </header>
+
   <div class="demo-canvas">
     <canvas aria-label={`${family} variant demo`}></canvas>
   </div>
 
   <PrimitiveKnob />
 
-  <section class="in-the-wild" aria-label="In the wild">
-    {variants.filter(v => v.status === 'built' && v.in_the_wild?.length).map(v => (
-      <details data-slug={v.slug}>
-        <summary>In the wild — {v.name}</summary>
-        <ul>
-          {v.in_the_wild!.map(use => (
-            <li><a href={`${base}a/${use.applied}/`}>{use.applied}</a> — {use.note}</li>
-          ))}
-        </ul>
-      </details>
-    ))}
-  </section>
-
-  <section class="code-panel" aria-label="Variant source code">
+  <details class="code-panel">
+    <summary>source</summary>
     {variants.filter(v => v.status === 'built').map(v => {
       const code = srcFor(v.slug);
       if (!code) return null;
@@ -80,24 +81,211 @@ const base = import.meta.env.BASE_URL;
         </pre>
       );
     })}
-  </section>
+  </details>
+
+  <dialog class="itw-modal" aria-labelledby="itw-modal-title">
+    <header class="itw-modal-head">
+      <div class="itw-modal-handle" aria-hidden="true"></div>
+      <h3 id="itw-modal-title" class="itw-modal-title"></h3>
+      <button type="button" class="itw-modal-close" aria-label="Close">×</button>
+    </header>
+    <ul class="itw-modal-list"></ul>
+  </dialog>
 </section>
 
 <script src={`${base}d/runner.js`} type="module"></script>
 
 <style>
-  .primitive-demo { display: grid; gap: 1rem; }
-  .variant-tabs { display: flex; gap: 0.4rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.4rem; }
-  .variant-tabs button { flex: 0 0 auto; padding: 0.5em 1em; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--fg-muted); font-family: var(--font-mono); cursor: pointer; scroll-snap-align: start; min-height: 44px; }
+  .primitive-demo { display: grid; gap: 0.6rem; }
+
+  /* Variant tabs — wrap, no horizontal scroll. Mobile-first dense; loosen at 641+. */
+  .variant-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .variant-tabs button {
+    flex: 0 0 auto;
+    padding: 0.4em 0.75em;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    min-height: 36px;
+    -webkit-tap-highlight-color: transparent;
+  }
   .variant-tabs button[aria-selected=true],
-  .variant-tabs button[data-active=true] { color: var(--fg); border-color: var(--accent); background: rgba(88,166,255,0.08); }
-  .variant-tabs button[data-built=false] { opacity: 0.5; cursor: not-allowed; }
+  .variant-tabs button[data-active=true] {
+    color: var(--fg);
+    border-color: var(--accent);
+    background: rgba(88,166,255,0.10);
+  }
+  .variant-tabs button[data-built=false] { opacity: 0.4; cursor: not-allowed; }
+
+  /* Active variant header — name + "+N" badge */
+  .variant-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 0.2rem;
+  }
+  .variant-name {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    margin: 0;
+    color: var(--fg);
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+  }
+  .itw-badge {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.2em 0.55em;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    min-height: 30px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .itw-badge:active { background: rgba(88,166,255,0.18); }
+
+  /* Canvas */
   .demo-canvas { aspect-ratio: 16/9; background: #0d1117; border-radius: 6px; overflow: hidden; }
   .demo-canvas canvas { display: block; width: 100%; touch-action: none; }
-  .in-the-wild summary { font-family: var(--font-mono); font-size: 0.9rem; cursor: pointer; }
-  .in-the-wild ul { font-family: var(--font-serif); margin: 0.4em 0 0; padding-left: 1.2rem; }
-  .code-panel pre { margin: 0; max-height: 24rem; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
+
+  /* Code panel — collapsed, smaller. Border-less summary, monospace marker. */
+  .code-panel { border: 1px solid var(--border); border-radius: 6px; background: rgba(255,255,255,0.02); }
+  .code-panel summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.4rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .code-panel summary::-webkit-details-marker { display: none; }
+  .code-panel summary::before { content: '▸  '; }
+  .code-panel[open] summary::before { content: '▾  '; }
+  .code-panel pre { margin: 0; max-height: 24rem; overflow: auto; font-size: 0.7rem; padding: 0.6rem 0.7rem; border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; }
+
+  /* === Modal (in-the-wild bottom-sheet) === */
+  .itw-modal {
+    border: 1px solid var(--accent);
+    background: #161b22;
+    color: var(--fg);
+    border-radius: 12px 12px 0 0;
+    padding: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 32rem;
+    max-height: 75vh;
+    overflow-y: auto;
+    position: fixed;
+    inset: auto 0 0 0;
+  }
+  .itw-modal::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); }
+  .itw-modal[open] { animation: itw-slide-up 0.22s cubic-bezier(.2,.7,.2,1); }
+  @keyframes itw-slide-up {
+    from { transform: translateY(100%); opacity: 0.6; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .itw-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: #161b22;
+  }
+  .itw-modal-handle {
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.5rem;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+  .itw-modal-title {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    margin: 0;
+    color: var(--fg);
+    flex: 1;
+    min-width: 0;
+  }
+  .itw-modal-close {
+    background: transparent;
+    color: var(--fg-muted);
+    border: 0;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .itw-modal-close:active { color: var(--fg); }
+  .itw-modal-list {
+    list-style: none;
+    padding: 0.4rem 1rem 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    margin: 0;
+  }
+  .itw-modal-list li { padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+  .itw-modal-list li:last-child { border-bottom: 0; }
+  .itw-applied {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .itw-applied:active { text-decoration: underline; }
+  .itw-note {
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+    margin-top: 0.2em;
+    line-height: 1.4;
+  }
+
   @media (max-width: 640px) {
-    .demo-canvas { max-height: 50vh; }
+    .demo-canvas { max-height: 45vh; }
+  }
+
+  @media (min-width: 641px) {
+    .primitive-demo { gap: 0.9rem; }
+    .variant-tabs { gap: 0.4rem; }
+    .variant-tabs button { font-size: 0.85rem; padding: 0.5em 1em; }
+    .variant-name { font-size: 1.15rem; }
+    .itw-badge { font-size: 0.8rem; padding: 0.25em 0.7em; min-height: 32px; }
+    .code-panel summary { font-size: 0.75rem; padding: 0.5rem 0.8rem; }
+    .code-panel pre { font-size: 0.8rem; padding: 0.8rem; }
+    /* Desktop modal: centered card, not bottom-sheet */
+    .itw-modal {
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      max-height: 70vh;
+      border-radius: 8px;
+    }
+    .itw-modal[open] { animation: itw-fade-in 0.18s ease-out; }
+    @keyframes itw-fade-in {
+      from { transform: translate(-50%, -45%); opacity: 0; }
+      to { transform: translate(-50%, -50%); opacity: 1; }
+    }
+    .itw-modal-handle { display: none; }
+    .itw-modal-head { padding: 0.7rem 1rem; }
   }
 </style>
