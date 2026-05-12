@@ -3,10 +3,10 @@ import PrimitiveCard from './PrimitiveCard.astro';
 import { eraMeta, erasByOrder } from '../lib/eras';
 import type { CollectionEntry } from 'astro:content';
 
-interface Props { entries: CollectionEntry<'primitives'>[]; }
+interface Props { entries: CollectionEntry<'applied'>[]; }
 const { entries } = Astro.props;
 
-const byEra = new Map<string, CollectionEntry<'primitives'>[]>();
+const byEra = new Map<string, CollectionEntry<'applied'>[]>();
 for (const era of erasByOrder) byEra.set(era, []);
 for (const e of entries) byEra.get(e.data.era_bucket)!.push(e);
 ---

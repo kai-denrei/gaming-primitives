@@ -2,12 +2,12 @@
 import EraGlyph from './EraGlyph.astro';
 import type { CollectionEntry } from 'astro:content';
 
-interface Props { entry: CollectionEntry<'primitives'>; }
+interface Props { entry: CollectionEntry<'applied'>; }
 const { entry } = Astro.props;
 const { id, name, player_verb, canonical_game, canonical_year, era_bucket, status } = entry.data;
 const base = import.meta.env.BASE_URL;
 ---
-<a class={`card status-${status}`} href={`${base}p/${id}/`}>
+<a class={`card status-${status}`} href={`${base}a/${id}/`}>
   <div class="card-head">
     <EraGlyph era={era_bucket} size={12} />
     <span class="card-name">{name}</span>

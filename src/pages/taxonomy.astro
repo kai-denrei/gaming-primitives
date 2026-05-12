@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import TaxonomyTree from '../components/TaxonomyTree.astro';
 import { getCollection } from 'astro:content';
 
-const entries = (await getCollection('primitives'))
+const entries = (await getCollection('applied'))
   .filter(e => e.id !== '__test__' && !e.id.startsWith('__test__/'));
 ---
 <Base title="Taxonomy — Gaming Primitives">
