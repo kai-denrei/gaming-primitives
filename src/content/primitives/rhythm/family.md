@@ -6,6 +6,7 @@ oneliner: Input quality measured against a temporal target — the metronome, th
 variants:
   - beat-pulse
   - timing-window
+  - multi-lane
   - combo-streak
   - tempo-curve
 ---
