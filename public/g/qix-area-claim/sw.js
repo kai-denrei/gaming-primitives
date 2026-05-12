@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v0.1.1';
+const CACHE_VERSION = 'v0.1.2';
 const PRECACHE = `qix-area-claim_precache_${CACHE_VERSION}`;
 const RUNTIME  = `qix-area-claim_runtime_${CACHE_VERSION}`;
 

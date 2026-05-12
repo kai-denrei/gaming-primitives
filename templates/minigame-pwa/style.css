@@ -4,7 +4,7 @@
   --hud: rgba(0,0,0,0.55);
 }
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; color: var(--fg); font-family: ui-monospace, "SF Mono", Menlo, monospace; -webkit-text-size-adjust: 100%; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; color: var(--fg); font-family: ui-monospace, "SF Mono", Menlo, monospace; -webkit-text-size-adjust: 100%; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 
 .toolbar { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.6rem; padding-top: calc(0.4rem + env(safe-area-inset-top, 0px)); padding-left: max(0.6rem, env(safe-area-inset-left, 0px)); padding-right: max(0.6rem, env(safe-area-inset-right, 0px)); background: rgba(0,0,0,0.55); position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
 .brand { font-weight: 700; font-size: 0.9rem; }

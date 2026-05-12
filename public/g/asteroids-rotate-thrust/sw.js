@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v0.1.1';
+const CACHE_VERSION = 'v0.1.2';
 const PRECACHE = `asteroids-rotate-thrust_precache_${CACHE_VERSION}`;
 const RUNTIME  = `asteroids-rotate-thrust_runtime_${CACHE_VERSION}`;
 

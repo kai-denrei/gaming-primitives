@@ -41,6 +41,17 @@ html, body {
 a { color: var(--accent); }
 a:hover { text-decoration: underline; }
 
+/* iOS long-press menu suppression — prevents "Copy / Look Up / Translate"
+   from appearing when the player holds a control button or long-presses
+   the canvas during gameplay. Applied to buttons, canvas, and labeled
+   interactive surfaces. Prose, paragraphs, and headings remain selectable. */
+button, canvas, .touch-bar, .variant-tabs button, .deeplink, .itw-badge,
+[data-deeplink], .knob-toggle, .knob-enum, .gp-update {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
