@@ -119,10 +119,14 @@ export async function mountDemo(rootEl) {
     knobHost.innerHTML = '';
     currentParams = defaultsFor(variant.parameters);
 
-    // Dynamic-import the module
+    // Dynamic-import the module. Use import.meta.url so the path resolves
+    // relative to where runner.js was served from — works under any base path
+    // (root in dev, /gaming-primitives/ on GH Pages). A bare absolute `/d/...`
+    // would 404 under a non-root base.
     let mod;
     try {
-      mod = await import(`/d/${family}/${slug}.js`);
+      const url = new URL(`./${family}/${slug}.js`, import.meta.url).href;
+      mod = await import(url);
     } catch (err) {
       console.error(`[primitive-demo] failed to load variant '${slug}' in '${family}':`, err);
       return;
