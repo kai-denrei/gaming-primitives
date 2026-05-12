@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import FamilyCard from '../../components/FamilyCard.astro';
+import { getCollection } from 'astro:content';
+
+const families = (await getCollection('primitiveFamilies')).sort((a, b) => a.data.name.localeCompare(b.data.name));
+const variants = await getCollection('primitiveVariants');
+
+function builtCount(familySlug: string) {
+  return variants.filter(v => v.id.startsWith(`${familySlug}/variants/`) && v.data.status === 'built').length;
+}
+
+const totalBuilt = families.reduce((n, f) => n + builtCount(f.data.slug), 0);
+const totalVariants = variants.length;
+---
+<Base title="Gaming Primitives">
+  <section class="hero">
+    <h1>Gaming Primitives</h1>
+    <p class="lede">
+      The irreducible mechanisms underneath thousands of games.
+      Each family page presents a row of variants you can tinker with
+      — slide a parameter, swap a topology, watch the feel change.
+    </p>
+    <p class="metadata">
+      {totalBuilt} of {totalVariants} variants playable across {families.length} families.
+    </p>
+  </section>
+
+  <ul class="families">
+    {families.map(f => (
+      <li>
+        <FamilyCard
+          slug={f.data.slug}
+          name={f.data.name}
+          oneliner={f.data.oneliner}
+          variantCount={f.data.variants.length}
+          builtCount={builtCount(f.data.slug)}
+        />
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .hero { max-width: 38rem; margin: 3rem auto 2rem; }
+  .hero h1 { font-family: var(--font-mono); font-size: 2.4rem; margin-bottom: 0.4em; }
+  .lede { font-family: var(--font-serif); font-size: 1.2rem; line-height: 1.5; }
+  .families { list-style: none; padding: 0; max-width: 64rem; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+  .families li { margin: 0; }
+</style>
