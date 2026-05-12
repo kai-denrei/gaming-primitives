@@ -25,7 +25,9 @@ function projectSegment(state, segIndex) {
   const wz = segIndex * SEGMENT_LEN - (state.accumZ % SEGMENT_LEN);
   if (wz < 0.1) return null;
   const scale = 1 / (1 + wz / SCALE_FACTOR);
-  const screenY = HORIZON_Y + (1 - scale) * (H - HORIZON_Y);
+  // Near (scale=1) → screenY=H (bottom, where the camera/car is).
+  // Far  (scale=0) → screenY=HORIZON_Y (vanishing point at the horizon line).
+  const screenY = HORIZON_Y + scale * (H - HORIZON_Y);
   const halfWidth = (state.roadWidth / 2) * scale;
 
   // Cumulative curve: sample sin at (accumZ + segment_z * SEGMENT_LEN)
