@@ -3,6 +3,7 @@ import '../styles/tokens.css';
 import '../styles/prose.css';
 import InstallButton from '../components/InstallButton.astro';
 import UpdateToast from '../components/UpdateToast.astro';
+import SearchOverlay from '../components/SearchOverlay.astro';
 import pkg from '../../package.json';
 import { execSync } from 'node:child_process';
 
@@ -73,6 +74,9 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
   <header class="topbar">
     <a href={base} class="brand">gaming primitives</a>
     <nav class="topnav">
+      <button type="button" class="topnav-search" data-gp-search-open aria-label="Search catalog" title="Search (press /)">
+        <span aria-hidden="true">⌕</span>
+      </button>
       <a href={`${base}p/`}>primitives</a>
       <a href={`${base}a/`}>applied</a>
       <a href={`${base}era/`}>era</a>
@@ -92,6 +96,7 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
     </span>
   </footer>
   <UpdateToast />
+  <SearchOverlay />
   <style>
     /* Mobile-first compact chrome — topbar in one row, small mono. Desktop
        (>=641px) loosens to the original spacing in the @media below. */
@@ -110,6 +115,23 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
     .topnav { display: flex; align-items: center; gap: 0.7rem; }
     .topnav a { font-family: var(--font-mono); color: var(--fg-muted); text-decoration: none; font-size: 0.72rem; white-space: nowrap; }
     .topnav a:hover { color: var(--fg); }
+    .topnav-search {
+      background: transparent;
+      border: 0;
+      color: var(--fg-muted);
+      cursor: pointer;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 1.05rem;
+      line-height: 1;
+      min-height: 32px;
+      min-width: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .topnav-search:hover, .topnav-search:focus-visible { color: var(--accent); background: rgba(88,166,255,0.08); outline: none; }
     main { min-height: 70vh; padding: 1rem; }
 
     @media (min-width: 641px) {

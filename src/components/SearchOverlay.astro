@@ -1,0 +1,342 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+<dialog id="gp-search" class="gp-search" aria-label="Search the catalog">
+  <header class="gp-search-head">
+    <span class="gp-search-icon" aria-hidden="true">⌕</span>
+    <input
+      id="gp-search-input"
+      class="gp-search-input"
+      type="search"
+      placeholder="search families, variants, games…"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      aria-label="Search query"
+    />
+    <button type="button" class="gp-search-close" aria-label="Close search">×</button>
+  </header>
+  <p id="gp-search-empty" class="gp-search-empty" hidden>
+    No matches. Try a game name, mechanic, or developer.
+  </p>
+  <ul id="gp-search-results" class="gp-search-results" aria-live="polite"></ul>
+  <footer class="gp-search-foot">
+    <span>↑↓ navigate · ↵ open · esc close</span>
+    <span id="gp-search-count" class="gp-search-count"></span>
+  </footer>
+</dialog>
+
+<script is:inline define:vars={{ base }}>
+  (() => {
+    const dialog   = document.getElementById('gp-search');
+    const input    = document.getElementById('gp-search-input');
+    const list     = document.getElementById('gp-search-results');
+    const empty    = document.getElementById('gp-search-empty');
+    const closeBtn = dialog.querySelector('.gp-search-close');
+    const countEl  = document.getElementById('gp-search-count');
+    let index = null;
+    let activeIdx = -1;
+    let lastResults = [];
+
+    async function loadIndex() {
+      if (index) return index;
+      try {
+        const res = await fetch(base + 'search-index.json');
+        index = await res.json();
+      } catch (e) {
+        index = [];
+      }
+      return index;
+    }
+
+    function search(query) {
+      if (!index || !query.trim()) return [];
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const scored = [];
+      for (const r of index) {
+        const titleL = r.title.toLowerCase();
+        const bodyL  = (r.body || '').toLowerCase();
+        const tagsL  = (r.tags || []).join(' ').toLowerCase();
+        const all = `${titleL} ${bodyL} ${tagsL}`;
+        let allMatch = true;
+        let score = 0;
+        for (const t of terms) {
+          if (!all.includes(t)) { allMatch = false; break; }
+          if (titleL.includes(t)) score += 10;
+          else if (bodyL.includes(t)) score += 5;
+          else score += 1;
+          // Word-boundary bonus
+          if (new RegExp(`\\b${t.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}`).test(titleL)) score += 5;
+        }
+        if (allMatch) scored.push({ ...r, score });
+      }
+      return scored.sort((a, b) => b.score - a.score).slice(0, 50);
+    }
+
+    function render(results) {
+      lastResults = results;
+      activeIdx = results.length ? 0 : -1;
+      list.innerHTML = '';
+      empty.hidden = !!results.length || !input.value.trim();
+      countEl.textContent = results.length ? `${results.length} match${results.length === 1 ? '' : 'es'}` : '';
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const li = document.createElement('li');
+        li.className = `gp-search-result gp-search-${r.type}`;
+        li.dataset.idx = String(i);
+        li.dataset.url = base.replace(/\/$/, '') + r.url;
+        if (i === activeIdx) li.dataset.active = 'true';
+        li.innerHTML = `
+          <span class="gp-search-type">${r.type}</span>
+          <span class="gp-search-title"></span>
+          <span class="gp-search-body"></span>
+        `;
+        li.querySelector('.gp-search-title').textContent = r.title;
+        li.querySelector('.gp-search-body').textContent = r.body || '';
+        list.appendChild(li);
+      }
+    }
+
+    function updateActive() {
+      const items = list.querySelectorAll('.gp-search-result');
+      items.forEach((el, i) => {
+        if (i === activeIdx) {
+          el.dataset.active = 'true';
+          el.scrollIntoView({ block: 'nearest' });
+        } else {
+          delete el.dataset.active;
+        }
+      });
+    }
+
+    function openResult(idx) {
+      const r = lastResults[idx];
+      if (!r) return;
+      const url = base.replace(/\/$/, '') + r.url;
+      dialog.close();
+      window.location.href = url;
+    }
+
+    async function openSearch() {
+      await loadIndex();
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeSearch() { dialog.close(); }
+
+    // Public: any element with [data-gp-search-open] opens the overlay.
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-gp-search-open]');
+      if (trigger) {
+        e.preventDefault();
+        openSearch();
+      }
+    });
+
+    // Slash and Cmd/Ctrl+K shortcuts.
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target.tagName || '').toLowerCase();
+      const inField = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+      if ((e.key === '/' && !inField) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault();
+        openSearch();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      render(search(input.value));
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (lastResults.length) { activeIdx = (activeIdx + 1) % lastResults.length; updateActive(); }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (lastResults.length) { activeIdx = (activeIdx - 1 + lastResults.length) % lastResults.length; updateActive(); }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeIdx >= 0) openResult(activeIdx);
+      }
+    });
+
+    // Click on a result.
+    list.addEventListener('click', (e) => {
+      const li = e.target.closest('.gp-search-result');
+      if (li) openResult(parseInt(li.dataset.idx, 10));
+    });
+
+    closeBtn.addEventListener('click', closeSearch);
+
+    // Backdrop click closes.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeSearch();
+    });
+
+    // Reset state on close so reopening shows a fresh prompt.
+    dialog.addEventListener('close', () => {
+      input.value = '';
+      list.innerHTML = '';
+      empty.hidden = true;
+      countEl.textContent = '';
+      activeIdx = -1;
+      lastResults = [];
+    });
+  })();
+</script>
+
+<style>
+  .gp-search[hidden] { display: none; }
+  .gp-search {
+    border: 1px solid var(--accent);
+    background: #161b22;
+    color: var(--fg);
+    border-radius: 10px;
+    padding: 0;
+    margin: 0;
+    width: min(100% - 1.6rem, 38rem);
+    max-height: 78vh;
+    overflow: hidden;
+    position: fixed;
+    inset: max(2rem, env(safe-area-inset-top, 0px)) auto auto 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  }
+  .gp-search::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); }
+  .gp-search[open] { animation: gp-search-in 0.18s ease-out; }
+  @keyframes gp-search-in {
+    from { transform: translate(-50%, -6px); opacity: 0; }
+    to   { transform: translate(-50%, 0);    opacity: 1; }
+  }
+
+  .gp-search-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    background: #161b22;
+  }
+  .gp-search-icon { font-size: 1.2rem; color: var(--accent); line-height: 1; }
+  .gp-search-input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    padding: 0.5rem 0.2rem;
+    outline: none;
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+  .gp-search-input::placeholder { color: var(--fg-muted); }
+  .gp-search-close {
+    background: transparent;
+    border: 0;
+    color: var(--fg-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gp-search-close:active { color: var(--fg); }
+
+  .gp-search-results {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem 0;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  .gp-search-result {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.05rem 0.6rem;
+    padding: 0.55rem 0.9rem;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gp-search-result:hover { background: rgba(255,255,255,0.04); }
+  .gp-search-result[data-active=true] {
+    background: rgba(88,166,255,0.10);
+    border-left-color: var(--accent);
+  }
+  .gp-search-type {
+    grid-row: 1 / 3;
+    grid-column: 1;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    align-self: center;
+    color: var(--fg-muted);
+  }
+  .gp-search-family   .gp-search-type { color: #39ff14; }
+  .gp-search-variant  .gp-search-type { color: var(--accent); }
+  .gp-search-applied  .gp-search-type { color: #ffd23f; }
+  .gp-search-title {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--fg);
+    line-height: 1.2;
+  }
+  .gp-search-body {
+    font-family: var(--font-serif);
+    font-size: 0.82rem;
+    color: var(--fg-muted);
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .gp-search-empty {
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    text-align: center;
+    margin: 0;
+  }
+  .gp-search-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0.8rem;
+    border-top: 1px solid var(--border);
+    background: #0d1117;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--fg-muted);
+  }
+  .gp-search-count { color: var(--fg); }
+
+  @media (max-width: 640px) {
+    .gp-search {
+      inset: max(0.6rem, env(safe-area-inset-top, 0px)) auto auto 50%;
+      width: calc(100% - 1.2rem);
+      max-height: 92vh;
+    }
+    .gp-search-input { font-size: 0.9rem; }
+    .gp-search-result { grid-template-columns: 4rem 1fr; padding: 0.5rem 0.7rem; }
+    .gp-search-title { font-size: 0.85rem; }
+    .gp-search-body { font-size: 0.78rem; }
+    .gp-search-foot { font-size: 0.65rem; }
+  }
+
+  /* Hide kbd hints on very narrow phones. */
+  @media (max-width: 380px) {
+    .gp-search-foot span:first-child { display: none; }
+  }
+</style>
