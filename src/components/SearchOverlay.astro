@@ -138,7 +138,11 @@ const buildSha = (() => {
       setTimeout(() => input.focus(), 50);
     }
 
-    function closeSearch() { dialog.close(); }
+    function closeSearch(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      try { dialog.close(); } catch (_) {}
+      dialog.removeAttribute('open');
+    }
 
     // Public: any element with [data-gp-search-open] opens the overlay.
     document.addEventListener('click', (e) => {
@@ -183,10 +187,20 @@ const buildSha = (() => {
     });
 
     closeBtn.addEventListener('click', closeSearch);
+    closeBtn.addEventListener('pointerup', closeSearch);
 
     // Backdrop click closes.
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) closeSearch();
+    });
+    dialog.addEventListener('pointerup', (e) => {
+      if (e.target === dialog) closeSearch();
+    });
+
+    // ESC inside the input — native dialog handles ESC at the dialog level
+    // but the input-focused state can swallow it; bind explicitly.
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
     });
 
     // Reset state on close so reopening shows a fresh prompt.
