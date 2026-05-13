@@ -1,5 +1,12 @@
 ---
+import { execSync } from 'node:child_process';
 const base = import.meta.env.BASE_URL;
+// Build-time SHA used as a cache-bust on the search-index fetch so a stale
+// SW entry from a prior deploy can't permanently shadow the current index.
+const buildSha = (() => {
+  try { return execSync('git rev-parse --short HEAD').toString().trim(); }
+  catch { return Date.now().toString(36); }
+})();
 ---
 <dialog id="gp-search" class="gp-search" aria-label="Search the catalog">
   <header class="gp-search-head">
@@ -26,7 +33,7 @@ const base = import.meta.env.BASE_URL;
   </footer>
 </dialog>
 
-<script is:inline define:vars={{ base }}>
+<script is:inline define:vars={{ base, buildSha }}>
   (() => {
     const dialog   = document.getElementById('gp-search');
     const input    = document.getElementById('gp-search-input');
@@ -39,11 +46,18 @@ const base = import.meta.env.BASE_URL;
     let lastResults = [];
 
     async function loadIndex() {
-      if (index) return index;
+      if (index && index.length) return index;
+      // Build-SHA query bypasses both browser HTTP cache and any stale SW
+      // entry — the SW caches by full URL, so a new query string is a new key.
+      const url = base + 'search-index.json?v=' + buildSha;
       try {
-        const res = await fetch(base + 'search-index.json');
-        index = await res.json();
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (!res.ok) throw new Error('http ' + res.status);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('not an array');
+        index = data;
       } catch (e) {
+        console.error('[gp-search] index load failed:', e);
         index = [];
       }
       return index;
