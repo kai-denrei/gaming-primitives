@@ -91,8 +91,18 @@ const buildSha = (() => {
       lastResults = results;
       activeIdx = results.length ? 0 : -1;
       list.innerHTML = '';
-      empty.hidden = !!results.length || !input.value.trim();
-      countEl.textContent = results.length ? `${results.length} match${results.length === 1 ? '' : 'es'}` : '';
+      const hasQuery = !!input.value.trim();
+      empty.hidden = !!results.length || !hasQuery;
+      // When there are no results, also show the diagnostic — index size.
+      // If the count is 0 the fetch failed; if non-zero the algorithm is at fault.
+      const idxSize = (index && Array.isArray(index)) ? index.length : 0;
+      if (results.length) {
+        countEl.textContent = `${results.length} match${results.length === 1 ? '' : 'es'}`;
+      } else if (hasQuery) {
+        countEl.textContent = `0 · idx=${idxSize}`;
+      } else {
+        countEl.textContent = idxSize ? `${idxSize} indexed` : '';
+      }
       for (let i = 0; i < results.length; i++) {
         const r = results[i];
         const li = document.createElement('li');
@@ -263,18 +273,29 @@ const buildSha = (() => {
     user-select: auto;
   }
   .gp-search-input::placeholder { color: var(--fg-muted); }
+  /* Hide native iOS / WebKit search-input clear button so users only see
+     our own × close (further right) and don't tap the wrong one. */
+  .gp-search-input::-webkit-search-cancel-button,
+  .gp-search-input::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
   .gp-search-close {
-    background: transparent;
-    border: 0;
-    color: var(--fg-muted);
-    font-size: 1.5rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  .gp-search-close:active { color: var(--fg); }
+  .gp-search-close:active { background: var(--accent); color: #0d1117; }
 
   .gp-search-results {
     list-style: none;
