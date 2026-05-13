@@ -1,6 +1,8 @@
 // Gaming Primitives hub SW. Hand-rolled, KikaCentroid-derived.
-// Bump CACHE_VERSION when shipping a new build.
-const CACHE_VERSION = 'v0.2.3';
+// CACHE_VERSION is templated at build time from package.json by the
+// sw-version-inject integration in astro.config.mjs. Bump pkg.version
+// to bump the SW cache key; dev mode leaves the literal token in place.
+const CACHE_VERSION = '__PKG_VERSION__';
 const PRECACHE = `gp-hub-precache-${CACHE_VERSION}`;
 const RUNTIME  = `gp-hub-runtime-${CACHE_VERSION}`;
 
@@ -55,6 +57,10 @@ self.addEventListener('fetch', (event) => {
 
   // Mini-game scope is NOT ours — let those SWs handle it.
   if (url.pathname.startsWith(SCOPE_PATH + 'g/')) return;
+
+  // Search index is build-versioned at fetch via ?v=<sha>; bypassing the SW
+  // entirely means dev iteration can't get stuck on a stale cacheFirst hit.
+  if (url.pathname === SCOPE_PATH + 'search-index.json') return;
 
   if (req.mode === 'navigate') {
     event.respondWith(navigationHandler(event));

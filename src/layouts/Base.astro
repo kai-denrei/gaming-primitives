@@ -42,7 +42,26 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
   <meta name="apple-mobile-web-app-title" content="Gaming Primitives" />
   <title>{title}</title>
   <script define:vars={{ base }}>
-    if ('serviceWorker' in navigator) {
+    // Dev escape hatch: ?reset-sw nukes every cache, unregisters SWs, and
+    // clears the UpdateToast 24h-dismissal lock. Visit /?reset-sw whenever
+    // you suspect the SW lifecycle has wedged.
+    if (location.search.includes('reset-sw')) {
+      (async () => {
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
+          }
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          try { localStorage.removeItem('gp_update_dismissed_until'); } catch (_) {}
+        } finally {
+          location.replace(location.pathname);
+        }
+      })();
+    } else if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register(base + 'sw.js', { scope: base }).catch(() => {});
       });
