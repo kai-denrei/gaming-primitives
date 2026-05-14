@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import MiniDemo from '../components/MiniDemo.astro';
 
 const base = import.meta.env.BASE_URL;
 ---
@@ -14,10 +15,52 @@ const base = import.meta.env.BASE_URL;
       <a href={`${base}p/`}>Browse primitives</a> · <a href={`${base}a/`}>Browse applied</a> · <a href={`${base}era/`}>scroll the timeline</a>
     </p>
   </section>
+
+  <section class="landing-demos" aria-label="Featured primitives">
+    <MiniDemo
+      family="bullets"
+      variant="gravity-affected"
+      label="Bullets — gravity-affected"
+      params={{ initial_speed: 350, launch_angle: 60, gravity: 50 }}
+      cycle={{ id: 'gravity', values: [50, 100, 150, 200], periodMs: 3000 }}
+    />
+    <MiniDemo
+      family="aiming"
+      variant="lock-on"
+      label="Aiming — lock-on"
+      params={{ lock_range: 200, target_count: 3, target_speed: 100 }}
+    />
+    <MiniDemo
+      family="collision"
+      variant="pixel-perfect"
+      label="Collision — pixel-perfect"
+      params={{ sprite_count: 3, speed: 100 }}
+    />
+    <MiniDemo
+      family="pathfinding"
+      variant="flocking"
+      label="Pathfinding — flocking"
+      params={{ agent_count: 25, align_weight: 1, cohesion_weight: 1, separation_weight: 1.5 }}
+    />
+  </section>
 </Base>
 
 <style>
   .hero { max-width: 38rem; margin: 4rem auto 2rem; }
   .hero h1 { font-family: var(--font-mono); font-size: 2.4rem; margin-bottom: 0.5em; }
   .lede { font-family: var(--font-serif); font-size: 1.25rem; line-height: 1.5; color: var(--fg); }
+
+  .landing-demos {
+    max-width: 64rem;
+    margin: 2rem auto 4rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  @media (min-width: 641px) {
+    .landing-demos {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.6rem 1.8rem;
+    }
+  }
 </style>

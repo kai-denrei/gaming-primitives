@@ -16,14 +16,27 @@ const { title, description = 'A catalog of irreducible gameplay primitives.', th
 const base = import.meta.env.BASE_URL;
 
 const buildSha = (() => {
-  try { return execSync('git rev-parse --short HEAD').toString().trim(); }
-  catch { return 'dev'; }
+  try {
+    const sha = execSync('git rev-parse --short HEAD').toString().trim();
+    const dirty = execSync('git status --porcelain').toString().trim();
+    return dirty ? `${sha}-dirty` : sha;
+  } catch { return 'dev'; }
 })();
 const buildDate = (() => {
   try { return execSync('git log -1 --format=%cd --date=short').toString().trim(); }
   catch { return new Date().toISOString().slice(0, 10); }
 })();
 const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
+
+// Cache-bust token — single-source identity for browser cache, badge, and
+// asset URLs. Derived from buildSha so the corner widget, the favicon shape,
+// and the ?v= on manifest/icons all agree at any moment in time.
+//   clean SHA   → 8 hex chars (e.g. "fcfe0021")
+//   dirty tree  → 'd' + 7 chars  (e.g. "dfcfe002") so the favicon cell shifts
+const cbCleanSha = buildSha.replace(/-dirty$/, '');
+const cbIsDirty = buildSha.endsWith('-dirty');
+const cbToken = (cbIsDirty ? 'd' + cbCleanSha : cbCleanSha).padEnd(8, '0').slice(0, 8);
+const cbCell = (parseInt(cbToken.slice(0, 2), 16) % 64).toString().padStart(2, '0');
 ---
 <!doctype html>
 <html lang="en">
@@ -33,13 +46,26 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
   <meta name="theme-color" content={themeColor} />
   <meta name="color-scheme" content="dark" />
   <meta name="description" content={description} />
-  <link rel="manifest" href={`${base}manifest.webmanifest`} />
-  <link rel="icon" href={`${base}icons/favicon-32.png`} sizes="32x32" type="image/png" />
-  <link rel="apple-touch-icon" href={`${base}icons/apple-touch-icon-180.png`} sizes="180x180" />
+  <!-- Anti-cache hints for the HTML entry. Real cache control lives in HTTP
+       headers (Cache-Control: no-cache on HTML); these meta tags are a
+       belt-and-braces nudge for browsers and intermediaries that respect them. -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href={`${base}manifest.webmanifest?v=${cbToken}`} />
+  <!-- SVG badge favicon first so modern browsers prefer it; PNG kept as
+       fallback for older clients. The shape changes every build, giving you
+       a glance-test that the new bundle reached the user. -->
+  <link rel="icon" type="image/svg+xml" href={`${base}cb-shapes/${cbCell}.svg?v=${cbToken}`} />
+  <link rel="icon" href={`${base}icons/favicon-32.png?v=${cbToken}`} sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href={`${base}icons/apple-touch-icon-180.png?v=${cbToken}`} sizes="180x180" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Gaming Primitives" />
+  <!-- Token consumed by /cb-badge.js to render the bottom-right shape widget. -->
+  <meta name="cb" content={cbToken} />
+  <script src={`${base}cb-badge.js?v=${cbToken}`} defer></script>
   <title>{title}</title>
   <script define:vars={{ base }}>
     // Dev escape hatch: ?reset-sw nukes every cache, unregisters SWs, and
@@ -109,7 +135,7 @@ const repoUrl = 'https://github.com/kai-denrei/gaming-primitives';
     <span class="build-info">
       <span class="build-version">v{pkg.version}</span>
       <span class="build-sep">·</span>
-      <a class="build-sha" href={`${repoUrl}/commit/${buildSha}`} rel="noopener" target="_blank">{buildSha}</a>
+      <a class="build-sha" href={`${repoUrl}/commit/${buildSha.replace(/-dirty$/, '')}`} rel="noopener" target="_blank">{buildSha}</a>
       <span class="build-sep">·</span>
       <span class="build-date">{buildDate}</span>
     </span>

@@ -7,7 +7,7 @@
 ## How to play
 
 - ArrowUp / ArrowDown — adjust angle by 1 degree (hold for 12 Hz repeat; range 20–80)
-- ArrowLeft / ArrowRight — adjust power by 1 unit (hold for 12 Hz repeat; range 40–140)
+- ArrowLeft / ArrowRight — adjust power by 1 unit (hold for 12 Hz repeat; range 120–360)
 - Space — fire (edge-triggered; locked while a stone is airborne)
 - R — restart the siege
 - Touch (landscape): top horizontal slider sets angle, right vertical slider sets power, bottom-center FIRE button launches, top-right R button restarts

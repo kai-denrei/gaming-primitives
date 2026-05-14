@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v0.1.0';
+const CACHE_VERSION = 'v0.1.3';
 const PRECACHE = `defender-of-the-crown-catapult_precache_${CACHE_VERSION}`;
 const RUNTIME  = `defender-of-the-crown-catapult_runtime_${CACHE_VERSION}`;
 

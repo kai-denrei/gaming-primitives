@@ -1,0 +1,185 @@
+---
+// MiniDemo — runs one variant from public/d/<family>/<variant>.js with no
+// controls. Used on the landing page to show 4 primitives at a glance.
+//
+// Props:
+//   family   — primitive family slug (e.g. "bullets")
+//   variant  — variant slug (e.g. "gravity-affected")
+//   params   — initial parameter object passed to init()
+//   cycle    — optional { id, values, periodMs } to autocycle one parameter
+//   label    — caption shown beneath the canvas; the `family · variant` line is
+//              built from those props automatically
+//   href     — caption is a link to this URL (defaults to /p/<family>/#<variant>)
+
+interface Props {
+  family: string;
+  variant: string;
+  params: Record<string, any>;
+  cycle?: { id: string; values: any[]; periodMs: number };
+  label: string;
+  href?: string;
+}
+const { family, variant, params, cycle, label, href } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const linkHref = href ?? `${base}p/${family}/#${variant}`;
+---
+<figure
+  class="mini-demo"
+  data-mini-demo
+  data-family={family}
+  data-variant={variant}
+  data-params={JSON.stringify(params)}
+  data-cycle={cycle ? JSON.stringify(cycle) : ''}
+  data-base={base}
+>
+  <a class="mini-demo-canvas" href={linkHref} aria-label={`Open ${label} primitive page`}>
+    <canvas aria-label={`${label} demo`}></canvas>
+  </a>
+  <figcaption>
+    <a href={linkHref}>{label}</a>
+    <span class="mini-demo-path">{family} · {variant}</span>
+  </figcaption>
+</figure>
+
+<script>
+  // Hoisted once per page by Astro. Finds every [data-mini-demo] in the
+  // document and starts a fresh runtime per instance. No tabs, no knobs, no
+  // code panel — just the visual.
+  const mounted = new WeakSet();
+
+  async function mountOne(el: HTMLElement) {
+    if (mounted.has(el)) return;
+    mounted.add(el);
+
+    const family = el.dataset.family!;
+    const variant = el.dataset.variant!;
+    const params = JSON.parse(el.dataset.params || '{}');
+    const cycle = el.dataset.cycle ? JSON.parse(el.dataset.cycle) : null;
+    const base = el.dataset.base || '/';
+    const canvas = el.querySelector('canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
+
+    let mod: any;
+    try {
+      // Use absolute URL so dynamic-import resolves under any base path
+      // (root in dev, /gaming-primitives/ on GH Pages).
+      const url = new URL(`${base}d/${family}/${variant}.js`, location.origin).href;
+      mod = await import(/* @vite-ignore */ url);
+    } catch (err) {
+      console.error(`[mini-demo] failed to load ${family}/${variant}:`, err);
+      return;
+    }
+
+    function sizeCanvas(logical: { w: number; h: number }) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0) return;
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.width * (logical.h / logical.w) * dpr);
+      canvas.style.height = `${rect.width * (logical.h / logical.w)}px`;
+      const k = dpr * (rect.width / logical.w);
+      ctx.setTransform(k, 0, 0, k, 0, 0);
+    }
+    sizeCanvas(mod.LOGICAL);
+
+    if (cycle) params[cycle.id] = cycle.values[0];
+    const env = {
+      canvas,
+      reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      requestPause() {}, requestResume() {},
+    };
+    const inst = mod.init(ctx, params, env);
+
+    let lastT = performance.now();
+    let cycleAccum = 0;
+    let cycleI = 0;
+    let visible = true;
+
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { visible = e.isIntersecting; }),
+      { threshold: 0.01 }
+    );
+    io.observe(el);
+
+    const ro = new ResizeObserver(() => sizeCanvas(mod.LOGICAL));
+    ro.observe(canvas.parentElement!);
+
+    function frame(t: number) {
+      const dt = Math.min(0.05, (t - lastT) / 1000);
+      lastT = t;
+      if (visible && !document.hidden) {
+        if (cycle) {
+          cycleAccum += dt * 1000;
+          if (cycleAccum >= cycle.periodMs) {
+            cycleAccum = 0;
+            cycleI = (cycleI + 1) % cycle.values.length;
+            params[cycle.id] = cycle.values[cycleI];
+            mod.applyParams?.(inst.state, params);
+          }
+        }
+        inst.tick(dt);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function bootAll() {
+    document.querySelectorAll<HTMLElement>('[data-mini-demo]').forEach(mountOne);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootAll);
+  } else {
+    bootAll();
+  }
+</script>
+
+<style>
+  .mini-demo {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .mini-demo-canvas {
+    display: block;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    transition: border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mini-demo-canvas:hover,
+  .mini-demo-canvas:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+  .mini-demo-canvas canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+  }
+  .mini-demo figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.25;
+  }
+  .mini-demo figcaption a {
+    color: var(--fg);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .mini-demo figcaption a:hover { color: var(--accent); }
+  .mini-demo-path {
+    color: var(--fg-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+</style>

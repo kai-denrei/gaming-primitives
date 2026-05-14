@@ -9,6 +9,7 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
 .toolbar { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.6rem; padding-top: calc(0.4rem + env(safe-area-inset-top, 0px)); padding-left: max(0.6rem, env(safe-area-inset-left, 0px)); padding-right: max(0.6rem, env(safe-area-inset-right, 0px)); background: rgba(0,0,0,0.55); position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
 .brand { font-weight: 700; font-size: 0.9rem; }
 .ver { font-weight: 400; color: rgba(255,255,255,0.6); margin-left: 0.4rem; font-size: 0.8em; }
+.build { font-weight: 400; color: rgba(255,255,255,0.35); margin-left: 0.5rem; font-size: 0.7em; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: 0.02em; }
 .spacer { flex: 1; }
 .tbtn { background: rgba(255,255,255,0.1); color: var(--fg); border: 1px solid rgba(255,255,255,0.2); padding: 0.25em 0.6em; border-radius: 3px; font-family: inherit; font-size: 0.85rem; cursor: pointer; text-decoration: none; line-height: 1; display: inline-flex; align-items: center; }
 .tbtn.back { font-size: 1.05rem; padding: 0.2em 0.55em; }
