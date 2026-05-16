@@ -13,6 +13,27 @@
   const cells = [0, 1, 2].map(i => parseInt(hex.slice(i * 2, i * 2 + 2), 16) % 64);
   const pad = n => String(n).padStart(2, "0");
 
+  // Derive the cb-shapes URL prefix + extension from the existing favicon
+  // <link>. The favicon is rendered by the framework (Astro, Next, etc.)
+  // and respects the deployment's base path — so on a sub-path deploy like
+  // GitHub Pages (/<repo>/...) it will already point at the right place.
+  // Bare "/cb-shapes/..." 404s under a sub-path; on iOS Safari the broken
+  // <img> renders as the system placeholder, which reads as "???" in a row.
+  // Falls back to "/cb-shapes/" + ".svg" only when no such link exists.
+  let cellPrefix = "/cb-shapes/";
+  let cellExt = ".svg";
+  const fav = document.querySelector(
+    'link[rel~="icon"][href*="/cb-shapes/"]'
+  );
+  if (fav) {
+    const href = fav.getAttribute("href") || "";
+    const m = href.match(/^(.*\/cb-shapes\/)\d{2}\.(svg|webp)(\?.*)?$/);
+    if (m) {
+      cellPrefix = m[1];
+      cellExt = "." + m[2];
+    }
+  }
+
   // Honor a hint in the meta tag if provided (e.g. content="cbd1dddb#dev").
   // Anything after '#' is treated as a label.
   const labelMatch = raw.match(/#(.+)$/);
@@ -41,12 +62,20 @@
 
   const tiles = cells.map(c => {
     const img = document.createElement("img");
-    img.src = `/cb-shapes/${pad(c)}.webp`;
+    img.src = `${cellPrefix}${pad(c)}${cellExt}`;
     img.alt = "";
     img.width = 20;
     img.height = 20;
     img.style.cssText = "display:block;border-radius:2px";
-    img.onerror = () => { img.src = `/cb-shapes/${pad(c)}.svg`; };
+    // If the chosen extension 404s, try the other one once (covers installs
+    // where cb-shapes ship as svg-only or webp-only). Guarded so it can't
+    // loop forever between the two.
+    img.onerror = () => {
+      if (img.dataset.cbFallback) return;
+      img.dataset.cbFallback = "1";
+      const alt = cellExt === ".webp" ? ".svg" : ".webp";
+      img.src = `${cellPrefix}${pad(c)}${alt}`;
+    };
     return img;
   });
   tiles.forEach(t => badge.appendChild(t));
